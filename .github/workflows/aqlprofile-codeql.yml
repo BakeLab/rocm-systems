@@ -57,7 +57,7 @@ jobs:
       run: |
         # Job container runs as root and does not include sudo.
         apt-get update
-        apt-get install -y software-properties-common
+        apt-get install -y software-properties-common gpg-agent
         apt-add-repository -y ppa:git-core/ppa
         apt-get update
         apt-get install -y git
