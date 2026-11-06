@@ -55,18 +55,19 @@ jobs:
       timeout-minutes: 10
       shell: bash
       run: |
-        sudo apt update
-        sudo apt install -y software-properties-common
-        sudo apt-add-repository ppa:git-core/ppa
-        sudo apt-get update
-        sudo apt install -y git
+        # Job container runs as root and does not include sudo.
+        apt-get update
+        apt-get install -y software-properties-common
+        apt-add-repository -y ppa:git-core/ppa
+        apt-get update
+        apt-get install -y git
 
     - name: Checkout repository
       uses: actions/checkout@v4
       with:
         sparse-checkout: |
           projects/aqlprofile
-          .github/workflows/aqlprofile-code-ql.yml
+          .github/workflows/aqlprofile-codeql.yml
 
     - name: Configure Git Safe Directory
       shell: bash
