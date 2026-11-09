@@ -95,7 +95,12 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          sparse-checkout: projects/rocprofiler-compute/.github
+          sparse-checkout: |
+            projects/rocprofiler-compute/.github
+            .github/actions/install-yq
+
+      - name: Install yq
+        uses: ./.github/actions/install-yq
 
       - name: Generate and output matrix
         id: generate_matrix

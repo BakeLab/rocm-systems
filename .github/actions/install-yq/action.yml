@@ -1,0 +1,20 @@
+name: Install pinned Mike Farah yq
+description: Install a checksum-verified yq v4 binary for workflow matrix generation
+runs:
+  using: composite
+  steps:
+    - name: Download and verify yq
+      shell: bash
+      run: |
+        set -euo pipefail
+        version=v4.54.3
+        checksum=129534601871538efe0ba4c5e62a34fb1d5f469bcb975c4fddeb467d82974973
+        install_dir="$RUNNER_TEMP/yq"
+        mkdir -p "$install_dir"
+        curl --fail --location --silent --show-error \
+          "https://github.com/mikefarah/yq/releases/download/${version}/yq_linux_amd64" \
+          --output "$install_dir/yq"
+        echo "${checksum}  ${install_dir}/yq" | sha256sum --check --status
+        chmod 0755 "$install_dir/yq"
+        echo "$install_dir" >> "$GITHUB_PATH"
+        "$install_dir/yq" --version

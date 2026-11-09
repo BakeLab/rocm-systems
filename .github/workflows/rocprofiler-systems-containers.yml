@@ -58,7 +58,12 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          sparse-checkout: projects/rocprofiler-systems/docker
+          sparse-checkout: |
+            projects/rocprofiler-systems/docker
+            .github/actions/install-yq
+
+      - name: Install yq
+        uses: ./.github/actions/install-yq
 
       - name: Output data for containers matrix
         working-directory: projects/rocprofiler-systems/docker
@@ -152,7 +157,12 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          sparse-checkout: projects/rocprofiler-systems
+          sparse-checkout: |
+            projects/rocprofiler-systems
+            .github/actions/install-yq
+
+      - name: Install yq
+        uses: ./.github/actions/install-yq
 
       - name: Output data for containers matrix
         working-directory: projects/rocprofiler-systems/docker
