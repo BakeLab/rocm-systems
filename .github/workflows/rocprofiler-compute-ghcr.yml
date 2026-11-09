@@ -39,7 +39,12 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          sparse-checkout: projects/rocprofiler-compute/docker
+          sparse-checkout: |
+            projects/rocprofiler-compute/docker
+            .github/actions/install-yq
+
+      - name: Install yq
+        uses: ./.github/actions/install-yq
 
       - name: Generate containers list
         working-directory: projects/rocprofiler-compute/docker
