@@ -65,11 +65,6 @@ jobs:
           sparse-checkout: build_tools
           path: "prejob"
 
-      - name: Pre-job cleanup processes on Windows
-        if: ${{ runner.os == 'Windows' }}
-        shell: powershell
-        run: . '${{ github.workspace }}\prejob\build_tools\github_actions\cleanup_processes.ps1'
-
       - name: Pre-job cleanup GPU processes on Linux
         if: ${{ runner.os == 'Linux' }}
         timeout-minutes: 5
@@ -135,11 +130,6 @@ jobs:
 
       # GitHub's 'Complete job' step is unaware of launched executables
       # and will fail to clean up orphan processes.
-      - name: Post-job cleanup processes on Windows
-        if: ${{ always() && runner.os == 'Windows' }}
-        shell: powershell
-        run: . '${{ github.workspace }}\build_tools\github_actions\cleanup_processes.ps1'
-
       - name: Post-job cleanup GPU processes on Linux
         if: ${{ always() && runner.os == 'Linux' }}
         timeout-minutes: 5

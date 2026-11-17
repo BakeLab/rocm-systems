@@ -30,6 +30,7 @@ jobs:
   setup:
     uses: ROCm/TheRock/.github/workflows/setup_multi_arch.yml@697f0cbd7c19aed91d68c498932fa72a591af4f2 # 2026-09-22
     with:
+      windows_amdgpu_families: 'none'
       build_variant: "asan"
       # Python/PyTorch/JAX builds are not supported with ASAN yet
       build_python_packages: false

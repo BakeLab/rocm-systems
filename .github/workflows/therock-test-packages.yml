@@ -72,11 +72,6 @@ jobs:
 
       # Checkout failure is possible on Windows, as it's the first job on a GPU test runner.
       # Post-job cleanup isn't necessary since no executables are launched in this job.
-      - name: Pre-job cleanup processes on Windows
-        if: ${{ runner.os == 'Windows' }}
-        shell: powershell
-        run: . '${{ github.workspace }}\prejob\build_tools\github_actions\cleanup_processes.ps1'
-
       - name: "Checking out repository"
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
@@ -100,7 +95,7 @@ jobs:
         env:
           PROJECTS_TO_TEST: ${{ inputs.projects_to_test }}
           AMDGPU_FAMILIES: ${{ inputs.amdgpu_families }}
-          WINDOWS_HIP_ROCR_TESTS: ${{ contains(inputs.projects_to_test, 'hip-tests') }}
+          WINDOWS_HIP_ROCR_TESTS: ''
           CI_CONFIG_PATH: ci-config
         id: configure
         run: python ./build_tools/github_actions/fetch_test_configurations.py --platform ${{ inputs.platform }}
