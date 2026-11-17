@@ -21,11 +21,6 @@ on:
         type: string
         description: "Insert comma-separated list of Linux GPU families to build and test. ex: gfx94X, gfx950"
         default: ""
-      windows_amdgpu_families:
-        type: string
-        description: "Insert comma-separated list of Windows GPU families to build and test. ex: gfx1151"
-        default: ""
-
 permissions:
   contents: read
 
@@ -60,15 +55,12 @@ jobs:
       BASE_REF: HEAD^
     outputs:
       linux_projects: ${{ steps.linux_projects.outputs.projects }}
-      windows_projects: ${{ steps.windows_projects.outputs.projects }}
       run_linux_rccl_ci: ${{ steps.linux_projects.outputs.run_linux_rccl_ci }}
       run_mi455_test: ${{ steps.linux_projects.outputs.run_mi455_test }}
       test_type: ${{ steps.linux_projects.outputs.test_type }}
       package_version: ${{ steps.rocm_package_version.outputs.rocm_package_version }}
       linux_package_targets: ${{ steps.configure_linux.outputs.package_targets }}
-      windows_package_targets: ${{ steps.configure_windows.outputs.package_targets }}
       linux_build_runs_on: ${{ steps.linux_projects.outputs.build_runs_on }}
-      windows_build_runs_on: ${{ steps.windows_projects.outputs.build_runs_on }}
     steps:
       - name: Checkout code
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
@@ -133,15 +125,6 @@ jobs:
         run: |
           python .github/scripts/therock_configure_ci.py
 
-      - name: Determine Windows projects to run
-        id: windows_projects
-        env:
-          SUBTREES: ${{ steps.detect.outputs.subtrees }}
-          PROJECTS: ${{ inputs.projects }}
-          PLATFORM: "windows"
-        run: |
-          python .github/scripts/therock_configure_ci.py
-
       - name: Compute package version
         id: rocm_package_version
         run: |
@@ -153,14 +136,6 @@ jobs:
           AMDGPU_FAMILIES: ${{ inputs.linux_amdgpu_families || 'gfx94X, gfx950' }}
           CI_CONFIG_PATH: ci-config
         id: configure_linux
-        run: python ./TheRock/build_tools/github_actions/fetch_package_targets.py
-
-      - name: Fetch Windows targets for build and test
-        env:
-          THEROCK_PACKAGE_PLATFORM: "windows"
-          AMDGPU_FAMILIES: ${{ inputs.windows_amdgpu_families || 'gfx1151' }}
-          CI_CONFIG_PATH: ci-config
-        id: configure_windows
         run: python ./TheRock/build_tools/github_actions/fetch_package_targets.py
 
   therock-ci-linux:
@@ -246,38 +221,11 @@ jobs:
         -DTHEROCK_ENABLE_ROCPROFV3=ON
         -DTHEROCK_ENABLE_MPI=ON
 
-  therock-ci-windows:
-    name: Windows (${{ matrix.projects.projects_to_test }} | ${{ matrix.target_bundle.amdgpu_family }})
-    permissions:
-      contents: read
-      id-token: write
-    needs: setup
-    if: ${{ needs.setup.outputs.windows_projects != '[]' }}
-    strategy:
-      fail-fast: false
-      matrix:
-        projects: ${{ fromJSON(needs.setup.outputs.windows_projects) }}
-        target_bundle: ${{ fromJSON(needs.setup.outputs.windows_package_targets) }}
-    uses: ./.github/workflows/therock-ci-windows.yml
-    with:
-      cmake_options: ${{ matrix.projects.cmake_options }}
-      projects_to_test: ${{ matrix.projects.projects_to_test }}
-      test_type: ${{ needs.setup.outputs.test_type }}
-      package_version: ${{ needs.setup.outputs.package_version }}
-      amdgpu_families: ${{ matrix.target_bundle.amdgpu_family }}
-      test_runs_on: ${{ matrix.target_bundle.test_machine }}
-      build_runs_on: ${{ needs.setup.outputs.windows_build_runs_on }}
-
   therock_ci_summary:
     name: TheRock CI Summary
     if: always()
     needs:
-      - ci-gate
-      - setup
-      - therock-ci-linux
-      - therock-build-linux-mi455
-      - therock-rccl-ci-linux
-      - therock-ci-windows
+      ["ci-gate", "setup", "therock-ci-linux", "therock-build-linux-mi455", "therock-rccl-ci-linux"]
     runs-on: ubuntu-24.04
     steps:
       - name: Report gate failure
