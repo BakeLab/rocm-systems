@@ -1,0 +1,36 @@
+From: Yuanyuan Chen <cyyever@gmail.com>
+Subject: [PATCH] drm/amdgpu: flush the TLB after CPU page table updates of
+ compute VMs
+
+Compute VMs on large-BAR systems update page tables with the CPU. A CPU
+update leaves no fence, so amdgpu_vm_tlb_flush() only bumps vm->tlb_seq
+and never creates the TLB flush fence. Only gfx command submission
+consumes tlb_seq; KFD user queues never do. The KFD map/unmap ioctls flush
+explicitly, but DRM_AMDGPU_GEM_VA (used by hipMemMap/hipMemUnmap) does
+not, so after an unmap the queues keep the old translation. Remapping the
+VA to a new allocation then sends writes to the freed BO while its
+clear-on-release runs: the new allocation reads back zeros.
+
+Flush synchronously when there is no fence to wait on, as the OOM
+fallback in amdgpu_vm_tlb_fence_create() already does.
+
+Link: https://github.com/ROCm/rocm-systems/issues/11693
+---
+--- a/drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c
++++ b/drivers/gpu/drm/amd/amdgpu/amdgpu_vm.c
+@@ -1059,6 +1059,15 @@
+ 	tlb_cb->vm = vm;
+ 	if (!fence || !*fence) {
+ 		amdgpu_vm_tlb_seq_cb(NULL, &tlb_cb->cb);
++		/*
++		 * CPU updates leave no fence for a TLB flush fence to wait on,
++		 * but the update is already visible, so flush right away.
++		 * Users of need_tlb_fence (KFD and user queues) never consume
++		 * tlb_seq and would otherwise keep stale translations.
++		 */
++		if (!params->unlocked && vm->need_tlb_fence)
++			amdgpu_gmc_flush_gpu_tlb_pasid(params->adev, vm->pasid,
++						       2, true, 0);
+ 		return;
+ 	}
+ 
