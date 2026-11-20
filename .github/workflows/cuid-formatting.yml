@@ -20,11 +20,8 @@ permissions:
   contents: read
 
 concurrency:
-  # PRs: group by PR number so a new commit cancels in-flight runs.
-  # Pushes: group by SHA so postsubmit runs never cancel each other.
-  group: ${{ github.workflow }}-${{ github.event.number || github.sha }}
-  cancel-in-progress: true
-
+  group: cuid-formatting-${{ github.event_name }}-${{ (github.event_name == 'push' || github.event_name == 'pull_request') && (github.event.pull_request.number || github.ref) || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'push' || github.event_name == 'pull_request' }}
 jobs:
   pre-commit:
     runs-on: ubuntu-24.04

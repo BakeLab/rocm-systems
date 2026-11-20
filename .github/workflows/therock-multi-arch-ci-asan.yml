@@ -46,15 +46,8 @@ permissions:
   actions: read
 
 concurrency:
-  # Only allow one run at a time for 'pull_request' events.
-  # Allow multiple runs for 'push' and 'workflow_dispatch'.
-  #
-  # `github.workflow`: each workflow gets its own concurrency group
-  # `github.head_ref`: the branch name (only defined for pull_request events)
-  # `github.run_id`  : fallback, unique for each run
-  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
-  cancel-in-progress: true
-
+  group: therock-multi-arch-ci-asan-${{ github.event_name }}-${{ (github.event_name == 'push' || github.event_name == 'pull_request') && (github.event.pull_request.number || github.ref) || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'push' || github.event_name == 'pull_request' }}
 jobs:
   setup:
     uses: ROCm/TheRock/.github/workflows/setup_multi_arch.yml@697f0cbd7c19aed91d68c498932fa72a591af4f2 # 2026-09-22
