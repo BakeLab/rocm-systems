@@ -50,8 +50,7 @@ compute_agent_mapping(const std::vector<int64_t>&                 logical_node_i
             if(logical_node_ids.at(ridx) != *node_id) continue;
 
             claimed.at(ridx) = true;
-            result.pairs.emplace_back(
-                agent_mapping_result::pair{ridx, hidx, *node_id});
+            result.pairs.emplace_back(agent_mapping_result::pair{ridx, hidx, *node_id});
             matched = true;
             break;
         }

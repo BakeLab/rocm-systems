@@ -25,6 +25,7 @@
 import sys
 import pytest
 
+
 def test_kernel_trace_row_count(
     kernel_input_data,
     expected_dispatch_count,

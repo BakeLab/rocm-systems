@@ -656,15 +656,14 @@ construct_agent_cache(::HsaApiTable* table)
 
         // Bare metal: rocprofiler and HSA read the same KFD sysfs tree, so a
         // disagreement is an internal inconsistency and still aborts.
-        ROCP_FATAL
-            << "Found " << rocp_agents.size() << " rocprofiler agents and " << hsa_agents.size()
-            << " HSA agents. HSA agents contained " << unmatched.size()
-            << " internal node ids not found by rocprofiler: "
-            << fmt::format("{}", fmt::join(unmatched.begin(), unmatched.end(), ", "))
-            << (mapping.unqueryable_count > 0
-                    ? fmt::format(" ({} HSA agents did not report a driver node id at all)",
-                                  mapping.unqueryable_count)
-                    : std::string{});
+        ROCP_FATAL << "Found " << rocp_agents.size() << " rocprofiler agents and "
+                   << hsa_agents.size() << " HSA agents. HSA agents contained " << unmatched.size()
+                   << " internal node ids not found by rocprofiler: "
+                   << fmt::format("{}", fmt::join(unmatched.begin(), unmatched.end(), ", "))
+                   << (mapping.unqueryable_count > 0
+                           ? fmt::format(" ({} HSA agents did not report a driver node id at all)",
+                                         mapping.unqueryable_count)
+                           : std::string{});
     }
 
     get_agent_caches().clear();

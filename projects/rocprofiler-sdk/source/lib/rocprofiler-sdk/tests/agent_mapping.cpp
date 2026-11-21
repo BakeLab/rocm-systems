@@ -36,9 +36,8 @@ using rocprofiler::agent::compute_agent_mapping;
 // logical ordinal and the driver node id agree and every agent pairs up.
 TEST(agent_mapping, bare_metal_maps_every_agent)
 {
-    const auto rocp =
-        std::vector<int64_t>{0, 1, 2};
-    const auto hsa = std::vector<std::optional<uint32_t>>{0, 1, 2};
+    const auto rocp = std::vector<int64_t>{0, 1, 2};
+    const auto hsa  = std::vector<std::optional<uint32_t>>{0, 1, 2};
 
     const auto mapping = compute_agent_mapping(rocp, hsa);
 

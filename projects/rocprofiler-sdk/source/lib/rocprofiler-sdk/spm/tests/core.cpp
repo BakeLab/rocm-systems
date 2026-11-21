@@ -222,7 +222,8 @@ null_buffered_callback(rocprofiler_context_id_t,
 
 TEST(spm_core, check_packet_generation)
 {
-    if(!agent::kfd_device_available()) GTEST_SKIP() << "Hardware counters require access to /dev/kfd";
+    if(!agent::kfd_device_available())
+        GTEST_SKIP() << "Hardware counters require access to /dev/kfd";
     ASSERT_EQ(hsa_init(), HSA_STATUS_SUCCESS);
     test_init();
     ASSERT_TRUE(hsa::get_queue_controller() != nullptr);
@@ -368,7 +369,8 @@ get_buffer_offset();
 
 TEST(spm_core, check_callbacks)
 {
-    if(!agent::kfd_device_available()) GTEST_SKIP() << "Hardware counters require access to /dev/kfd";
+    if(!agent::kfd_device_available())
+        GTEST_SKIP() << "Hardware counters require access to /dev/kfd";
     int64_t count = 0;
     ASSERT_EQ(hsa_init(), HSA_STATUS_SUCCESS);
     test_init();
@@ -499,7 +501,8 @@ TEST(spm_core, check_callbacks)
 
 TEST(spm_core, destroy_counter_profile)
 {
-    if(!agent::kfd_device_available()) GTEST_SKIP() << "Hardware counters require access to /dev/kfd";
+    if(!agent::kfd_device_available())
+        GTEST_SKIP() << "Hardware counters require access to /dev/kfd";
     ASSERT_EQ(hsa_init(), HSA_STATUS_SUCCESS);
     test_init();
 
@@ -694,7 +697,8 @@ TEST(spm_core, start_stop_buffered_ctx)
 
 TEST(spm_core, test_profile_incremental)
 {
-    if(!agent::kfd_device_available()) GTEST_SKIP() << "Hardware counters require access to /dev/kfd";
+    if(!agent::kfd_device_available())
+        GTEST_SKIP() << "Hardware counters require access to /dev/kfd";
     ASSERT_EQ(hsa_init(), HSA_STATUS_SUCCESS);
     test_init();
     ASSERT_TRUE(hsa::get_queue_controller() != nullptr);
@@ -784,7 +788,8 @@ TEST(spm_core, test_profile_incremental)
 
 TEST(spm_core, public_api_iterate_agents)
 {
-    if(!agent::kfd_device_available()) GTEST_SKIP() << "Hardware counters require access to /dev/kfd";
+    if(!agent::kfd_device_available())
+        GTEST_SKIP() << "Hardware counters require access to /dev/kfd";
     ASSERT_EQ(hsa_init(), HSA_STATUS_SUCCESS);
     test_init();
 

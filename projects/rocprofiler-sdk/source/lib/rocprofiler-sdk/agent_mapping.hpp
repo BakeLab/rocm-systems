@@ -55,10 +55,7 @@ struct agent_mapping_result
 
     size_t unqueryable_count = 0;
 
-    bool complete() const
-    {
-        return unmatched_node_ids.empty() && unqueryable_count == 0;
-    }
+    bool complete() const { return unmatched_node_ids.empty() && unqueryable_count == 0; }
 };
 
 // Pair every HSA agent with at most one rocprofiler agent. Each rocprofiler

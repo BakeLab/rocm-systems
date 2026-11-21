@@ -167,7 +167,6 @@ CounterController::configure_dispatch(rocprofiler_context_id_t                  
 
         ctx.dispatch_counter_collection =
             std::make_unique<rocprofiler::context::dispatch_counter_collection_service>();
-
     }
 
     auto& cb = *ctx.dispatch_counter_collection->callbacks.emplace_back(

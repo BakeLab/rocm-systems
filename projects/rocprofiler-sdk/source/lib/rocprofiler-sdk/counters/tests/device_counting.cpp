@@ -394,7 +394,8 @@ protected:
 
     void SetUp() override
     {
-        if(!agent::kfd_device_available()) GTEST_SKIP() << "Hardware counters require access to /dev/kfd";
+        if(!agent::kfd_device_available())
+            GTEST_SKIP() << "Hardware counters require access to /dev/kfd";
     }
 
     static void test_run(const device_counting_run_options& options)
