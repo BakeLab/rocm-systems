@@ -28,12 +28,8 @@ permissions:
   contents: read
 
 concurrency:
-  # Group by PR number so a new push supersedes the previous run. Pushes to
-  # develop fall back to the commit sha, which is unique, so post-merge runs
-  # never cancel each other.
-  group: ${{ github.workflow }}-${{ github.event.number || github.sha }}
-  cancel-in-progress: true
-
+  group: amdsmi-build-${{ github.event_name }}-${{ (github.event_name == 'push' || github.event_name == 'pull_request') && (github.event.pull_request.number || github.ref) || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'push' || github.event_name == 'pull_request' }}
 env:
   DEBIAN_FRONTEND: noninteractive
   DEBCONF_NONINTERACTIVE_SEEN: true
