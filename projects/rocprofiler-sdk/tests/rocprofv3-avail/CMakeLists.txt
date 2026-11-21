@@ -11,8 +11,7 @@ project(
 find_package(rocprofiler-sdk REQUIRED)
 find_package(Python3 REQUIRED)
 
-# Absence of /dev/kfd indicates a WSL2/DXG (or no-KFD) environment; several tests below
-# gate on it. See rocprofiler_sdk_kfd_available in the rocprofiler-sdk-utilities module.
+rocprofiler_sdk_kfd_available in the rocprofiler-sdk-utilities module.
 rocprofiler_sdk_kfd_available(_KFD_AVAILABLE)
 
 set(PRELOAD_ENV "${ROCPROFILER_MEMCHECK_PRELOAD_ENV_VALUE}")
@@ -20,10 +19,7 @@ set(PRELOAD_ENV "${ROCPROFILER_MEMCHECK_PRELOAD_ENV_VALUE}")
 # disable when GPU-0 is navi2, navi3, and navi4
 list(GET rocprofiler-sdk-tests-gfx-info 0 pc-sampling-gpu-0-gfx-info)
 # Disable for all sanitizers - Python tests cannot load sanitizer libs dynamically due to
-# static TLS block allocation limitations On WSL (no /dev/kfd) gfx-info[0] is a synthetic
-# CPU agent, so the arch regex above misses and these tests would run and fail; disable
-# them there so WSL matches the real gfx11-class + KFD behavior (where the arch match
-# already disables them).
+# static TLS block allocation limitations.
 if("${pc-sampling-gpu-0-gfx-info}" MATCHES "^gfx(10|11|12)[0-9][0-9]$"
    OR "${pc-sampling-gpu-0-gfx-info}" MATCHES "^gfx906$"
    OR ROCPROFILER_MEMCHECK
@@ -64,10 +60,7 @@ else()
     set(COUNTER_CHECK_L2_HIT TCC_HIT)
 endif()
 
-# PC sampling is not available on navi2/3/4 (gfx10/11/12), gfx906, under memcheck, or when
-# arch info is missing (e.g. WSL synth-agent path). It also fundamentally requires
-# /dev/kfd, so disable it when that device is absent (e.g. WSL/dxg), otherwise it fails
-# with "Cannot open /dev/kfd for pc sampling".
+# PC sampling requires a supported GPU and access to KFD.
 set(IS_PC_SAMPLING_DISABLED OFF)
 if("${pc-sampling-gpu-0-gfx-info}" MATCHES "^gfx(10|11|12)[0-9][0-9]$"
    OR "${pc-sampling-gpu-0-gfx-info}" MATCHES "^gfx906$"

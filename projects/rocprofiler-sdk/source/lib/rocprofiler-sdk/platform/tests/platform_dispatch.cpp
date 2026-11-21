@@ -20,16 +20,8 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-// Coverage for the runtime platform-dispatch logic in agent.cpp and the
-// per-platform is_available()/enumerate() entry points. Standard CI does not
-// run inside WSL, so the WSL-specific assertions here only verify that
-// is_available() returns false off-WSL and that enumerate() degrades to an
-// empty vector without crashing - i.e. the negative path that any non-WSL
-// build of librocprofiler-sdk must satisfy.
-
 #include "lib/rocprofiler-sdk/agent.hpp"
 #include "lib/rocprofiler-sdk/platform/gnulinux/agent.hpp"
-#include "lib/rocprofiler-sdk/platform/wsl/agent.hpp"
 
 #include "lib/common/environment.hpp"
 #include "lib/common/filesystem.hpp"
@@ -93,41 +85,6 @@ local_topology_path()
 }
 }  // namespace
 
-// wsl::is_available() must be safe to call on any Linux host, including
-// machines without /dev/dxg. CI runners are bare-metal Linux, so the
-// expected answer there is false.
-TEST(platform_dispatch, wsl_is_available_off_wsl_is_false)
-{
-    if(::access("/dev/dxg", F_OK) == 0)
-    {
-        GTEST_SKIP() << "/dev/dxg present - running inside WSL, skipping negative-path test";
-    }
-    EXPECT_FALSE(platform::wsl::is_available());
-}
-
-// wsl::enumerate() must degrade to an empty vector (not crash, not throw)
-// when libdxcore.so is not loadable. Exercises the early-out branches in
-// the enumerator on every CI host.
-TEST(platform_dispatch, wsl_enumerate_off_wsl_is_empty)
-{
-    if(::access("/dev/dxg", F_OK) == 0)
-    {
-        GTEST_SKIP() << "/dev/dxg present - running inside WSL, skipping negative-path test";
-    }
-    auto agents = platform::wsl::enumerate();
-    EXPECT_TRUE(agents.empty());
-}
-
-// rocprof-attach sets this marker before tool registration. The WSL provider
-// must refuse immediately, independent of whether this host has /dev/dxg.
-TEST(platform_dispatch, late_attach_marker_disables_wsl_enumeration)
-{
-    EnvGuard guard{{"ROCPROFILER_REGISTER_TOOL_ATTACHED"}};
-    common::set_env("ROCPROFILER_REGISTER_TOOL_ATTACHED", std::string{"1"}, 1);
-
-    EXPECT_TRUE(platform::wsl::enumerate().empty());
-}
-
 // gnulinux::is_available() must accept the test fixture's sysfs tree via
 // the documented env override. This is the same fixture used by
 // agent_local_topology in agent.cpp.
@@ -144,61 +101,17 @@ TEST(platform_dispatch, gnulinux_is_available_with_local_topology)
     EXPECT_TRUE(platform::gnulinux::is_available());
 }
 
-// The explicit late-attach marker disables only the WSL provider. With the
-// fixture sysfs and gnulinux forced, the ordinary Linux enumerator must still
-// populate agents exactly as it does outside attach mode.
+// Native enumeration also uses the configured topology during late attach.
 TEST(platform_dispatch, late_attach_marker_does_not_change_gnulinux_enumeration)
 {
     auto topo = local_topology_path();
     if(topo.empty()) GTEST_SKIP() << "test data 'data/topology/nodes' not found next to binary";
 
-    EnvGuard guard{{"ROCPROFILER_FORCE_PLATFORM",
-                    "ROCPROFILER_REGISTER_TOOL_ATTACHED",
+    EnvGuard guard{{"ROCPROFILER_REGISTER_TOOL_ATTACHED",
                     "ROCPROFILER_KFD_TOPOLOGY",
                     "AMD_KFD_TOPOLOGY",
                     "HSA_MODEL_TOPOLOGY"}};
-    common::set_env("ROCPROFILER_FORCE_PLATFORM", std::string{"gnulinux"}, 1);
     common::set_env("ROCPROFILER_REGISTER_TOOL_ATTACHED", std::string{"1"}, 1);
-    common::set_env("ROCPROFILER_KFD_TOPOLOGY", topo.string(), 1);
-    common::set_env("AMD_KFD_TOPOLOGY", std::string{}, 1);
-    common::set_env("HSA_MODEL_TOPOLOGY", std::string{}, 1);
-
-    rocprofiler::registration::init_logging();
-    agent::internal_refresh_topology();
-    EXPECT_FALSE(agent::get_agents().empty());
-}
-
-// Forcing the wsl enumerator on a non-WSL host must NOT fall back to
-// gnulinux - the override is explicit, and the user's request to get an
-// empty topology back is a valid outcome we want to be able to observe.
-TEST(platform_dispatch, force_platform_wsl_returns_empty_off_wsl)
-{
-    if(::access("/dev/dxg", F_OK) == 0)
-    {
-        GTEST_SKIP() << "/dev/dxg present - running inside WSL, skipping negative-path test";
-    }
-
-    EnvGuard guard{{"ROCPROFILER_FORCE_PLATFORM"}};
-    common::set_env("ROCPROFILER_FORCE_PLATFORM", std::string{"wsl"}, 1);
-
-    rocprofiler::registration::init_logging();
-    agent::internal_refresh_topology();
-    EXPECT_TRUE(agent::get_agents().empty());
-}
-
-// Unknown override values must log a warning and fall through to autodetect
-// rather than aborting. With the local-topology fixture in place, autodetect
-// resolves to gnulinux and produces a non-empty agent vector.
-TEST(platform_dispatch, force_platform_unknown_falls_back_to_autodetect)
-{
-    auto topo = local_topology_path();
-    if(topo.empty()) GTEST_SKIP() << "test data 'data/topology/nodes' not found next to binary";
-
-    EnvGuard guard{{"ROCPROFILER_FORCE_PLATFORM",
-                    "ROCPROFILER_KFD_TOPOLOGY",
-                    "AMD_KFD_TOPOLOGY",
-                    "HSA_MODEL_TOPOLOGY"}};
-    common::set_env("ROCPROFILER_FORCE_PLATFORM", std::string{"not-a-platform"}, 1);
     common::set_env("ROCPROFILER_KFD_TOPOLOGY", topo.string(), 1);
     common::set_env("AMD_KFD_TOPOLOGY", std::string{}, 1);
     common::set_env("HSA_MODEL_TOPOLOGY", std::string{}, 1);

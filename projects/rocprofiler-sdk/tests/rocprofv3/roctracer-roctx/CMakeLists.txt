@@ -32,7 +32,6 @@ rocprofiler_add_integration_execute_test(
         ${TRANSPOSE_ROCTRACER_ROCTX_EXE}
     DEPENDS transpose-roctracer-roctx
     TIMEOUT 45
-    WSL_TIMEOUT_SCALE
     LABELS "integration-tests"
     PRELOAD "${PRELOAD_ENV}"
     DISABLED "${TRANSPOSE_ROCTRACER_ROCTX_DISABLED}"

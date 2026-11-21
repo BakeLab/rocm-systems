@@ -26,54 +26,37 @@ namespace rocprofiler
 {
 namespace agent
 {
-namespace
-{
-bool
-keys_match(const mapping_agent_view& rocp_agent, uint32_t driver_node_id, mapping_policy policy)
-{
-    if(policy == mapping_policy::wsl) return rocp_agent.node_id == driver_node_id;
-    return rocp_agent.logical_node_id == static_cast<int64_t>(driver_node_id);
-}
-}  // namespace
-
 agent_mapping_result
-compute_agent_mapping(const std::vector<mapping_agent_view>& rocp_agents,
-                      const std::vector<mapping_hsa_view>&   hsa_agents,
-                      mapping_policy                         policy)
+compute_agent_mapping(const std::vector<int64_t>&                 logical_node_ids,
+                      const std::vector<std::optional<uint32_t>>& driver_node_ids)
 {
     auto result  = agent_mapping_result{};
-    auto claimed = std::vector<bool>(rocp_agents.size(), false);
+    auto claimed = std::vector<bool>(logical_node_ids.size(), false);
 
-    for(size_t hidx = 0; hidx < hsa_agents.size(); ++hidx)
+    for(size_t hidx = 0; hidx < driver_node_ids.size(); ++hidx)
     {
-        const auto& hsa_agent = hsa_agents.at(hidx);
+        const auto& node_id = driver_node_ids.at(hidx);
 
-        if(!hsa_agent.has_node_id)
+        if(!node_id)
         {
             ++result.unqueryable_count;
             continue;
         }
 
         auto matched = false;
-        for(size_t ridx = 0; ridx < rocp_agents.size(); ++ridx)
+        for(size_t ridx = 0; ridx < logical_node_ids.size(); ++ridx)
         {
             if(claimed.at(ridx)) continue;
-            if(!keys_match(rocp_agents.at(ridx), hsa_agent.driver_node_id, policy)) continue;
+            if(logical_node_ids.at(ridx) != *node_id) continue;
 
             claimed.at(ridx) = true;
             result.pairs.emplace_back(
-                agent_mapping_result::pair{ridx, hidx, hsa_agent.driver_node_id});
+                agent_mapping_result::pair{ridx, hidx, *node_id});
             matched = true;
             break;
         }
 
-        if(!matched)
-        {
-            if(hsa_agent.is_gpu)
-                result.unmatched_gpu_node_ids.emplace_back(hsa_agent.driver_node_id);
-            else
-                result.unmatched_other_node_ids.emplace_back(hsa_agent.driver_node_id);
-        }
+        if(!matched) result.unmatched_node_ids.emplace_back(*node_id);
     }
 
     return result;

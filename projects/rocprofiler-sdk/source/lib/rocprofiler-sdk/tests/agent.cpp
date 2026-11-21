@@ -26,8 +26,6 @@
 #include "lib/common/filesystem.hpp"
 #include "lib/common/utility.hpp"
 #include "lib/rocprofiler-sdk/platform/agent.hpp"
-#include "lib/rocprofiler-sdk/platform/gnulinux/agent.hpp"
-#include "lib/rocprofiler-sdk/platform/wsl/agent.hpp"
 #include "lib/rocprofiler-sdk/registration.hpp"
 #include "lib/rocprofiler-sdk/tests/details/agent.hpp"
 
@@ -206,29 +204,7 @@ TEST(rocprofiler_lib, agent)
 
     auto& hsa_agents_v = _rocm_info.agents;
 
-    // rocprofiler and the HSA runtime enumerate the topology independently. On
-    // bare metal both read the same KFD tree, so rocprofiler's list is a superset
-    // of HSA's. On WSL rocprofiler drops every GPU the DXG topology thunk cannot
-    // fully describe while HSA keeps reporting it, so there the list may
-    // legitimately be a strict subset.
-    //
-    // select_platform() in agent.cpp has internal linkage, so its precedence has
-    // to be restated here: an explicit ROCPROFILER_FORCE_PLATFORM decides, a
-    // value it does not recognize is ignored in favour of autodetect, and
-    // autodetect prefers gnulinux over wsl.
-    const bool wsl_topology = []() {
-        const auto forced =
-            ::rocprofiler::common::get_env("ROCPROFILER_FORCE_PLATFORM", std::string{});
-        if(forced == "wsl") return true;
-        if(forced == "gnulinux") return false;
-        return !::rocprofiler::platform::gnulinux::is_available() &&
-               ::rocprofiler::platform::wsl::is_available();
-    }();
-
-    if(!wsl_topology)
-    {
-        EXPECT_GE(agents.size(), hsa_agents_v.size());
-    }
+    EXPECT_GE(agents.size(), hsa_agents_v.size());
 
     uint64_t skipped = 0;
     for(const auto* agent : agents)
@@ -321,19 +297,7 @@ TEST(rocprofiler_lib, agent)
         }
     }
 
-    // Every rocprofiler agent either paired with a distinct HSA agent or was
-    // counted in 'skipped'. Phrased as a subtraction from agents.size() (never
-    // less than 'skipped') rather than 'skipped == agents.size() -
-    // hsa_agents_v.size()' so it cannot underflow when rocprofiler published
-    // fewer agents than HSA reports.
-    if(wsl_topology)
-    {
-        EXPECT_LE(agents.size() - skipped, hsa_agents_v.size());
-    }
-    else
-    {
-        EXPECT_EQ(agents.size() - skipped, hsa_agents_v.size());
-    }
+    EXPECT_EQ(agents.size() - skipped, hsa_agents_v.size());
 
     // clean up memory leak
     for(auto& itr : _rocm_info.isas)

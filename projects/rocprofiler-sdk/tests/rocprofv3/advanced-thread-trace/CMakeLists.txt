@@ -364,12 +364,7 @@ if(attdecoder_FOUND
         FAIL_REGULAR_EXPRESSION "AssertionError")
 endif()
 
-# Other SIMD file tests. Requires both a supported arch (gfx11/12) AND the
-# rocprof-trace-decoder library: the test sets ROCPROF_ATT_LIBRARY_PATH and aborts with
-# "rocprof-trace-decoder library path not found" when the decoder is absent (e.g. WSL, or
-# any environment without the decoder installed). Gate on IS_DISABLED (which is ON when
-# attdecoder is not found) like the other ATT tests, so it is skipped rather than failing
-# when the decoder is unavailable.
+# SIMD tests require a supported architecture and the trace decoder.
 set(ATT_NO_DETAIL_OUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/att-no-detail")
 
 rocprofiler_add_integration_execute_test(

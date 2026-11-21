@@ -38,8 +38,7 @@ namespace windows
 bool
 is_available();
 
-// Native Windows D3DKMT enumeration. Skeleton only at this point - real
-// implementation will mirror the WSL path against the WDK headers.
+// Native Windows D3DKMT enumeration.
 std::vector<unique_agent_t>
 enumerate();
 
