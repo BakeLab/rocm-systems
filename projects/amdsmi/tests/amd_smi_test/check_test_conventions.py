@@ -40,9 +40,7 @@ TEST_SUFFIX = "_test.cc"
 # A GTest suite name is <Component><Type>[<Operation>]:
 #   unit       -> <Component>Unit                        (no operation)
 #   functional -> <Component>Functional{ReadOnly,ReadWrite}
-SUITE_RE = re.compile(
-    r"^(Gpu|Cpu|Nic|Ifoe|System)(Unit|FunctionalReadOnly|FunctionalReadWrite)$"
-)
+SUITE_RE = re.compile(r"^(Gpu|Cpu|Nic|Ifoe|System)(Unit|FunctionalReadOnly|FunctionalReadWrite)$")
 
 # Captures the suite from TEST(Suite, Name) and TEST_F(Suite, Name).
 _TEST_MACRO_RE = re.compile(r"\bTEST(?:_F)?\(\s*([A-Za-z_]\w*)\s*,")

@@ -1281,7 +1281,6 @@ amdsmi_status_t amdsmi_get_gpu_device_uuid(amdsmi_processor_handle processor_han
     return AMDSMI_STATUS_INVAL;
   }
 
-
   uint64_t device_uuid = 0;
   uint16_t device_id = std::numeric_limits<uint16_t>::max();
   uint8_t partition_idx = 0xff;
@@ -1625,7 +1624,6 @@ amdsmi_status_t amdsmi_get_temp_metric(amdsmi_processor_handle processor_handle,
                                        amdsmi_temperature_metric_t metric, int64_t* temperature) {
   AMDSMI_CHECK_INIT();
 
-
   if (temperature == nullptr) {
     return AMDSMI_STATUS_INVAL;
   }
@@ -1657,7 +1655,6 @@ amdsmi_status_t amdsmi_get_npm_info(amdsmi_node_handle node_handle, amdsmi_npm_i
   if (board_path_str == nullptr || board_path_str->empty()) {
     return AMDSMI_STATUS_INVAL;
   }
-
 
   rsmi_npm_info_t rsmi_npm_info;
   rsmi_status_t rstatus =
@@ -4110,7 +4107,6 @@ amdsmi_status_t amdsmi_get_gpu_metrics_info(amdsmi_processor_handle processor_ha
                                             amdsmi_gpu_metrics_t* pgpu_metrics) {
   AMDSMI_CHECK_INIT();
 
-
   if (pgpu_metrics == nullptr) {
     return AMDSMI_STATUS_INVAL;  // Return error if pgpu_metrics is null
   }
@@ -4285,7 +4281,6 @@ amdsmi_status_t amdsmi_get_clk_freq(amdsmi_processor_handle processor_handle,
                                     amdsmi_clk_type_t clk_type, amdsmi_frequencies_t* f) {
   AMDSMI_CHECK_INIT();
   // nullptr api supported
-
 
   // VCLK/DCLK have no rsmi/gpu_metrics path; read directly from pp_dpm_* sysfs.
   if (clk_type == AMDSMI_CLK_TYPE_VCLK0 || clk_type == AMDSMI_CLK_TYPE_VCLK1 ||
@@ -5244,7 +5239,6 @@ amdsmi_status_t amdsmi_get_gpu_process_list(amdsmi_processor_handle processor_ha
   if (status_code != AMDSMI_STATUS_SUCCESS) {
     return status_code;
   }
-
 
   // Get the list of compute processes running on the GPU
   auto compute_process_list = gpu_device->amdgpu_get_compute_process_list();
