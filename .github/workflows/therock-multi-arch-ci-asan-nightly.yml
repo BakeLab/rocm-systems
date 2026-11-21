@@ -27,9 +27,14 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  linux_stages:
+    uses: ./.github/workflows/therock-linux-stages.yml
+
   setup:
+    needs: linux_stages
     uses: ROCm/TheRock/.github/workflows/setup_multi_arch.yml@697f0cbd7c19aed91d68c498932fa72a591af4f2 # 2026-09-22
     with:
+      build_stages: ${{ needs.linux_stages.outputs.stages }}
       windows_amdgpu_families: 'none'
       build_variant: "asan"
       # Python/PyTorch/JAX builds are not supported with ASAN yet

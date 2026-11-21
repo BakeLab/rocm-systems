@@ -1,0 +1,41 @@
+name: Select native Linux build stages
+on:
+  workflow_call:
+    inputs:
+      requested:
+        type: string
+        default: ''
+    outputs:
+      stages:
+        value: ${{ jobs.select.outputs.stages }}
+permissions:
+  contents: read
+jobs:
+  select:
+    runs-on: ubuntu-latest
+    outputs:
+      stages: ${{ steps.select.outputs.stages }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          repository: ROCm/TheRock
+          ref: 697f0cbd7c19aed91d68c498932fa72a591af4f2
+          sparse-checkout: BUILD_TOPOLOGY.toml
+          sparse-checkout-cone-mode: false
+          persist-credentials: false
+      - id: select
+        env:
+          REQUESTED: ${{ inputs.requested }}
+        shell: python
+        run: |
+          import os
+          import tomllib
+
+          with open('BUILD_TOPOLOGY.toml', 'rb') as topology:
+              supported = set(tomllib.load(topology)['build_stages']) - {'wsl-rocdxg'}
+          requested = os.environ['REQUESTED']
+          stages = supported if not requested else supported.intersection(requested.split(','))
+          if not stages:
+              raise SystemExit('No native Linux stages selected')
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as output:
+              print('stages=' + ','.join(sorted(stages)), file=output)
