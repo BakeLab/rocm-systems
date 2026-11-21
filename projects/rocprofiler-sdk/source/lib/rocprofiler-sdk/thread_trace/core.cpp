@@ -39,10 +39,6 @@
 #include "lib/rocprofiler-sdk/kernel_replay/local_context.hpp"
 #include "lib/rocprofiler-sdk/registration.hpp"
 
-#ifndef _WIN32
-#    include "lib/rocprofiler-sdk/platform/wsl/agent.hpp"
-#endif
-
 #include <rocprofiler-sdk/fwd.h>
 #include <rocprofiler-sdk/hsa.h>
 #include <rocprofiler-sdk/intercept_table.h>
@@ -161,7 +157,7 @@ ThreadTracerAgent::ThreadTracerAgent(thread_trace_parameter_pack _params,
             memory = kfd_memory_pool_t::create(gpu);
             if(!memory) throw std::runtime_error{"Could not create KFD thread-trace memory pool"};
         }
-        else if(!platform::wsl::is_available())
+        else
         {
             static auto once = std::once_flag{};
             std::call_once(once, []() {

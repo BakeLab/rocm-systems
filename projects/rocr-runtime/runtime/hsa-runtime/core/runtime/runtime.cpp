@@ -2135,7 +2135,7 @@ void Runtime::AsyncEventsLoop(void* _eventsInfo) {
       // only compounds within a single idle wait and every new wait starts
       // again at the floor -- the escalated value cannot carry across waits.
       // The ceiling depends on why we would be polling: with interrupts
-      // unavailable globally (WSL/dxg, DTIF, KFD 1.0, HSA_ENABLE_INTERRUPT=0)
+      // unavailable globally (DTIF, KFD 1.0, HSA_ENABLE_INTERRUPT=0)
       // every signal is polling-only and a long nap costs only the napping
       // wait's own observation latency. With interrupts available, polling can
       // still be forced by a single EopEvent-less signal in the batch (an IPC
@@ -2237,13 +2237,7 @@ void Runtime::AsyncEventsLoop(void* _eventsInfo) {
           }
         } else if (polling && !finish) {
           // No interrupt-backed event is available for at least one pending
-          // signal (PrepareInterrupt forced polling) -- on the WSL/dxg thunk
-          // that is every signal, since it implements no KFD events at all.
-          // Without a sleep this loop monopolizes a CPU core re-scanning the
-          // signal values for the whole lifetime of the async-events thread,
-          // idle or not; the two async-events threads cost ~2 cores in every
-          // process that has merely touched the GPU
-          // (https://github.com/ROCm/librocdxg/issues/60). Nap between scans,
+          // signal (PrepareInterrupt forced polling). Nap between scans,
           // doubling from 20us up to poll_nap_ceiling_us (2ms when the whole
           // runtime is polling-only, 200us when a mixed batch also carries
           // interrupt-backed handlers this nap would delay -- see the ceiling
@@ -4582,8 +4576,6 @@ Runtime::MappedHandleAllowedAgent::MappedHandleAllowedAgent(MappedHandle* _mappe
 
 Runtime::MappedHandleAllowedAgent::~MappedHandleAllowedAgent() {
   if (targetAgent->device_type() == core::Agent::DeviceType::kAmdCpuDevice) {
-    if (core::Runtime::runtime_singleton_->thunkLoader()->IsWslDxg()) assert(!"Unimplemented");
-
     /* Remap the CPU mapping back to anonymous, freeing the DRM FD while retaining VA reservation */
     bool result = rocr::os::UncommitMemory(va, size);
     assert(result && "Failed to remap VA to anonymous");
@@ -4599,8 +4591,6 @@ Runtime::MappedHandleAllowedAgent::~MappedHandleAllowedAgent() {
 
 hsa_status_t Runtime::MappedHandleAllowedAgent::EnableAccess(hsa_access_permission_t perms) {
   if (targetAgent->device_type() == core::Agent::DeviceType::kAmdCpuDevice) {
-    if (core::Runtime::runtime_singleton_->thunkLoader()->IsWslDxg()) return HSA_STATUS_ERROR;
-
     MemoryHandle* memHandle = mappedHandle->mem_handle;
 
     // For imported handles, we don't have a region/drm_owner 
@@ -4643,8 +4633,6 @@ hsa_status_t Runtime::MappedHandleAllowedAgent::EnableAccess(hsa_access_permissi
 hsa_status_t Runtime::MappedHandleAllowedAgent::RemoveAccess() {
   if (targetAgent->device_type() == core::Agent::DeviceType::kAmdCpuDevice) {
     if (permissions != HSA_ACCESS_PERMISSION_NONE) {
-      if (core::Runtime::runtime_singleton_->thunkLoader()->IsWslDxg()) return HSA_STATUS_ERROR;
-
       hsa_access_permission_t perms = HSA_ACCESS_PERMISSION_NONE;
       if (!rocr::os::ProtectMemory(va, size, PermissionsToMemProt(perms))) {
         return HSA_STATUS_ERROR;
@@ -4662,9 +4650,6 @@ Runtime::MappedHandle::MappedHandle(MemoryHandle* mem_handle, AddressHandle* add
                                     void* va, uint64_t offset, size_t size,
                                     hsa_access_permission_t perm)
     : mem_handle(mem_handle), address_handle(address_handle), offset(offset), size(size) {
-  /* Create a CPU mapping with PROT_NONE */
-  if (core::Runtime::runtime_singleton_->thunkLoader()->IsWslDxg()) return;
-
   if (!mem_handle->imported) {
     /*
      * Create default CPU mapping. This is needed for the kfd_peerdirect drivers

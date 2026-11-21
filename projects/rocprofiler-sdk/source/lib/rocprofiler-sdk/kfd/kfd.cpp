@@ -1578,14 +1578,7 @@ rocprofiler_status_t init(std::index_sequence<Inxs...>)
 {
     static const small_vector<size_t> event_ids{Inxs...};
 
-    // On platforms without a usable KFD device node (e.g. WSL2, where only
-    // /dev/dxg is exposed), report the service as unavailable instead of
-    // aborting in kfd_device_fd(). init() runs only when a KFD buffer-tracing
-    // kind was explicitly requested, so this status reaches the caller of
-    // rocprofiler_configure_buffer_tracing_service rather than handing back a
-    // service that can never produce a record. The capability probe lives at
-    // the topology level (rocprofiler::agent) so KFD tracing and counter
-    // collection share a single source of truth.
+    // Report unavailable tracing when the process cannot open KFD.
     if(!::rocprofiler::agent::kfd_device_available())
     {
         ROCP_WARNING << fmt::format(

@@ -15,9 +15,6 @@
 #include <sstream>
 
 #include "amd_smi/impl/amd_smi_gpu_device.h"
-#ifdef ENABLE_WSL_BACKEND
-#include "amd_smi/impl/amd_smi_wsl_device.h"
-#endif
 #ifdef BRCM_NIC
 #include "amd_smi/impl/nic/amd_smi_nic_device.h"
 #include "amd_smi/impl/nic/amd_smi_switch_device.h"
@@ -351,18 +348,6 @@ amdsmi_status_t AMDSmiSystem::populate_amd_cpus() {
 #endif
 
 amdsmi_status_t AMDSmiSystem::populate_amd_gpu_devices() {
-#ifdef ENABLE_WSL_BACKEND
-  // WSL path: TryPopulate handles /dev/dxg detection, librocdxg loading, and
-  // device enumeration. Returns NOT_SUPPORTED when not on WSL.
-  amdsmi_status_t wsl_status = WSLGPUBackend::TryPopulate(sockets_, processors_);
-  if (wsl_status == AMDSMI_STATUS_DRIVER_NOT_LOADED) {
-    std::ostringstream ss;
-    ss << __func__ << ": WSL detected (/dev/dxg) but librocdxg.so.1 failed to load";
-    LOG_INFO(ss);
-  }
-  if (wsl_status != AMDSMI_STATUS_NOT_SUPPORTED) return wsl_status;
-  // Fall through to native Linux path if not on WSL.
-#endif
   // Native Linux path: use rsmi + libdrm.
   AMDSmiSystem::cleanup();
   rsmi_driver_state_t state;
@@ -758,19 +743,10 @@ amdsmi_status_t AMDSmiSystem::cleanup() {
       sockets_.clear();
     }
     drm_.cleanup();
-#ifdef ENABLE_WSL_BACKEND
-    bool used_wsl = WSLGPUBackend::IsActive();
-    amdsmi_status_t wsl_ret = WSLGPUBackend::Shutdown();
-    if (wsl_ret != AMDSMI_STATUS_SUCCESS) return wsl_ret;
-    if (!used_wsl) {
-#endif
-      rsmi_status_t ret = rsmi_shut_down();
-      if (ret != RSMI_STATUS_SUCCESS) {
-        return amd::smi::rsmi_to_amdsmi_status(ret);
-      }
-#ifdef ENABLE_WSL_BACKEND
+    rsmi_status_t ret = rsmi_shut_down();
+    if (ret != RSMI_STATUS_SUCCESS) {
+      return amd::smi::rsmi_to_amdsmi_status(ret);
     }
-#endif
   }
   if (init_flag_ & AMDSMI_INIT_AMD_NICS) {
     smi_nic_destroy_context(ainic_ctx_);

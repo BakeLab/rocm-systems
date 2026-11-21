@@ -7,7 +7,7 @@
 // Escalating backoff for userspace polling fallbacks.
 //
 // Some wait paths cannot sleep in the kernel (e.g. AsyncEventsLoop when the
-// thunk exposes no interrupt-backed signal events, as on the WSL/dxg thunk).
+// thunk exposes no interrupt-backed signal events).
 // Those paths re-scan signal values in userspace and would otherwise burn a
 // full CPU core. To keep idle cost near zero without penalizing a wait that
 // completes quickly, the nap between scans starts at a small floor and doubles
@@ -26,7 +26,7 @@ namespace core {
 inline constexpr int kPollNapFloorUs = 20;
 
 // Ceiling (microseconds) when the runtime has no interrupt-backed signal
-// events at all (g_use_interrupt_wait == false, e.g. the WSL/dxg thunk).
+// events at all (g_use_interrupt_wait == false).
 // Every signal is polling-only, so the only cost of a long nap is observation
 // latency of the napping wait itself.
 inline constexpr int kPollNapCeilingUs = 2000;

@@ -185,9 +185,7 @@ test_init()
     hsa::get_queue_controller()->init(get_api_table(), get_ext_table());
 }
 
-// Every test below needs a real HSA queue on a GPU. rocprofiler publishes no GPU
-// agent when the platform topology is unavailable (e.g. WSL without a librocdxg
-// exporting the topology ABI), leaving nothing to create a queue on.
+// These tests need a real HSA queue on a GPU.
 bool
 has_supported_agents()
 {

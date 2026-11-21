@@ -26,7 +26,7 @@ void RequireDevice() {
   }
 }
 
-// IPC handle APIs are frequently unavailable on WSL, single-device, and certain
+// IPC handle APIs are frequently unavailable on single-device and certain
 // runtime paths, reporting hipErrorNotSupported or a context/OS error rather
 // than an invalid-argument error. This classifier deliberately excludes
 // hipErrorInvalidValue so that it can be reused where a hipErrorInvalidValue
@@ -43,27 +43,10 @@ bool IsIpcUnsupportedError(hipError_t error) {
   }
 }
 
-// Classifies the outcome of an IPC call that was made with valid arguments
-// (a real device pointer or a properly created interprocess event). On some
-// runtime/platform paths - notably WSL/dxg - the IPC handle APIs are not
-// implemented and surface that as hipErrorInvalidValue even though the call
-// arguments are valid. For such valid-argument calls there is no legitimate
-// invalid-argument condition, so hipErrorInvalidValue can only mean the
-// capability is unavailable; treat it, along with the other unsupported codes,
-// as an unsupported-capability skip. This classifier must never be used to judge
-// calls that intentionally pass null arguments, where hipErrorInvalidValue is
-// the expected, correct result.
-bool IsIpcUnsupportedFromValidCall(hipError_t error) {
-  return IsIpcUnsupportedError(error) || error == hipErrorInvalidValue;
-}
-
 // Probes whether IPC memory handles can be produced on this device/runtime path
 // by attempting a tiny allocation and hipIpcGetMemHandle with a valid pointer.
 // Returns true only when the handle is produced successfully. Because the probe
-// call uses valid arguments, any unsupported-capability error - including the
-// hipErrorInvalidValue reported by WSL/dxg for unimplemented IPC - means the
-// capability is unavailable and the probe returns false. Any other failure is
-// surfaced through HIP_CHECK so that genuine contract regressions are not masked.
+// call uses valid arguments, genuine errors are surfaced through HIP_CHECK.
 // The probe allocation is always freed before returning.
 bool IpcMemHandleSupported() {
   void* ptr = nullptr;
@@ -77,7 +60,7 @@ bool IpcMemHandleSupported() {
   if (status == hipSuccess) {
     return true;
   }
-  if (IsIpcUnsupportedFromValidCall(status)) {
+  if (IsIpcUnsupportedError(status)) {
     return false;
   }
   HIP_CHECK(status);
@@ -102,10 +85,7 @@ HIP_TEST_CASE(Contract_Ipc_HipIpcGetMemHandle_Default_SucceedsForDeviceAllocatio
 
   hipIpcMemHandle_t handle{};
   const hipError_t status = hipIpcGetMemHandle(&handle, ptr);
-  // The pointer is valid, so an unsupported-capability error (including the
-  // hipErrorInvalidValue WSL/dxg returns for unimplemented IPC) means the
-  // platform cannot produce IPC handles and the test skips rather than fails.
-  if (IsIpcUnsupportedFromValidCall(status)) {
+  if (IsIpcUnsupportedError(status)) {
     HIP_SKIP_TEST("IPC memory handles are not supported by this device/runtime path.");
   }
   HIP_CHECK(status);
@@ -126,10 +106,7 @@ HIP_TEST_CASE(Contract_Ipc_HipIpcOpenMemHandle_Default_SameProcessRoundTrip) {
 
   hipIpcMemHandle_t handle{};
   const hipError_t get_status = hipIpcGetMemHandle(&handle, ptr);
-  // Valid pointer: an unsupported-capability error (including WSL/dxg's
-  // hipErrorInvalidValue for unimplemented IPC) is a platform skip, not a
-  // failure.
-  if (IsIpcUnsupportedFromValidCall(get_status)) {
+  if (IsIpcUnsupportedError(get_status)) {
     HIP_SKIP_TEST("IPC memory handles are not supported by this device/runtime path.");
   }
   HIP_CHECK(get_status);
@@ -140,7 +117,7 @@ HIP_TEST_CASE(Contract_Ipc_HipIpcOpenMemHandle_Default_SameProcessRoundTrip) {
   // Opening an IPC memory handle is designed for a different process. In the
   // same process the AMD runtime rejects the open with hipErrorInvalidContext,
   // and other runtime/platform paths may report the capability as unsupported
-  // (including hipErrorInvalidValue on WSL/dxg). All of these are platform
+  // on this device. All of these are platform
   // limitations of a same-process round trip rather than contract violations, so
   // any non-success result is treated as a skip after cleanup.
   if (open_status != hipSuccess) {
@@ -220,11 +197,7 @@ HIP_TEST_CASE(Contract_Ipc_HipIpcOpenEventHandle_Default_SameProcessRoundTrip) {
 
   hipIpcEventHandle_t handle{};
   const hipError_t get_status = hipIpcGetEventHandle(&handle, event);
-  // The event was created with the required hipEventInterprocess flag, so the
-  // arguments are valid; an unsupported-capability error (including the
-  // hipErrorInvalidValue WSL/dxg returns for unimplemented IPC) means the
-  // platform cannot export IPC event handles and the test skips.
-  if (IsIpcUnsupportedFromValidCall(get_status)) {
+  if (IsIpcUnsupportedError(get_status)) {
     HIP_SKIP_TEST("IPC event handles are not supported by this device/runtime path.");
   }
   HIP_CHECK(get_status);

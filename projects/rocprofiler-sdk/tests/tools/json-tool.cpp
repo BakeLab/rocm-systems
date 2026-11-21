@@ -1739,10 +1739,7 @@ rocprofiler_timestamp_t fini_time            = 0;
 rocprofiler_thread_id_t main_tid             = 0;
 auto                    kfd_configure_status = ROCPROFILER_STATUS_SUCCESS;
 
-// KFD event tracing is legitimately unavailable both when the driver is too old
-// to report the events and when the KFD device node is absent altogether (e.g.
-// WSL2, which exposes /dev/dxg but not /dev/kfd). Neither is a tool failure, and
-// in both cases the KFD sections of the output must not be validated.
+// KFD event tracing requires both a supported kernel and access to the device.
 bool
 kfd_tracing_unavailable(rocprofiler_status_t status)
 {

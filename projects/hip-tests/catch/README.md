@@ -80,16 +80,10 @@ unit:
     Unit_atomicExch_system_Positive_Peer_GPUs:
       <<: *level_2
       tags: [multigpu]
-      # SWDEV-435667: Below tests failing randomly in stress test on 01/12/23
-      disabled: [amd_wsl]
 ```
 will be generated (on an AMD linux machine) as:
 ```cpp
 #define Unit_atomicExch_system_Positive_Peer_GPUs "Unit_atomicExch_system_Positive_Peer_GPUs", "[multigpu][level_2][atomics]"
-```
-and on an AMD WSL machine as (skipping the test):
-```cpp
-#define Unit_atomicExch_system_Positive_Peer_GPUs "Unit_atomicExch_system_Positive_Peer_GPUs", "[.]"
 ```
 and this macro is expanded in the actual test case definition
 ```cpp

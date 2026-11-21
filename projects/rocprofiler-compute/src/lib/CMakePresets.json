@@ -4,7 +4,7 @@
     {
       "name": "linux-debug",
       "displayName": "Linux Debug",
-      "description": "Target the Windows Subsystem for Linux (WSL) or a remote system.",
+      "description": "Target a Linux system.",
       "generator": "Unix Makefiles",
       "binaryDir": "${sourceDir}/_build/out/build/${presetName}",
       "installDir": "${sourceDir}/_build/out/install/${presetName}",
@@ -19,7 +19,7 @@
     {
       "name": "linux-release",
       "displayName": "Linux Release",
-      "description": "Target the Windows Subsystem for Linux (WSL) or a remote system.",
+      "description": "Target a Linux system.",
       "generator": "Unix Makefiles",
       "binaryDir": "${sourceDir}/_build/out/build/${presetName}",
       "installDir": "${sourceDir}/_build/out/install/${presetName}",

@@ -903,7 +903,7 @@ The capture layer compiles into `amdhip64` through
 `projects/clr/hipamd/src/hrr/CMakeLists.txt`. The playback tools build from the
 standalone `projects/hrr` project (`projects/hrr/playback/CMakeLists.txt`, wired in
 from `projects/hrr/CMakeLists.txt`) against a capture-enabled ROCm/HIP install prefix.
-Builds are Linux/Ninja (on Windows, build inside WSL — there is no native Windows build).
+Builds are Linux/Ninja.
 
 ### Capture runtime (amdhip64)
 ```bash

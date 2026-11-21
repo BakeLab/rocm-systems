@@ -155,8 +155,14 @@ jobs:
             --run-all-tests "${{ steps.configure-pr.outputs.run_all_tests || steps.configure-manual.outputs.run_all_tests }}" \
             --therock-path "_therock"
 
-  setup:
+  linux_stages:
     needs: configure
+    uses: ./.github/workflows/therock-linux-stages.yml
+    with:
+      requested: ${{ needs.configure.outputs.build_stages }}
+
+  setup:
+    needs: [configure, linux_stages]
     uses: ROCm/TheRock/.github/workflows/setup_multi_arch.yml@697f0cbd7c19aed91d68c498932fa72a591af4f2 # 2026-09-22
     with:
       windows_amdgpu_families: 'none'
@@ -170,7 +176,7 @@ jobs:
       # TheRock (ROCm/TheRock#7600) builds only these stages and skips every
       # other stage outright (no build, no artifact copy). Empty = build all,
       # the fail-safe for fan-out / unknown-project / CI-infra changes.
-      build_stages: ${{ needs.configure.outputs.build_stages }}
+      build_stages: ${{ needs.linux_stages.outputs.stages }}
       prebuilt_stages: ${{ inputs.prebuilt_stages || '' }}
       baseline_run_id: ${{ inputs.baseline_run_id || '' }}
       build_python_packages: ${{ inputs.build_python_packages || false }}

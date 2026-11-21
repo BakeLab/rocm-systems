@@ -43,15 +43,6 @@
 
 cmake_minimum_required(VERSION 3.25)
 
-# The binary-only wkmi.lib is compiled with /MT so ROCR must follow suit.
-# Otherwise, the default is /MD and the library cannot be linked.
-# If the linkage of wkmi.lib is ever changed to /MD, this must be updated
-# or deleted.
-# Must come before project and after cmake_minimum_required
-if(WIN32)
-  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-endif()
-
 # Set the project name
 project("rocr")
 set( CORE_TARGET "hsa-rocr" )
@@ -130,11 +121,6 @@ set_target_properties(hsakmt PROPERTIES
                                 ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/libhsakmt/archive"
                                 LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/libhsakmt/lib"
                                 RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/libhsakmt/runtime")
-if (WIN32)
-set_target_properties(hsakmt PROPERTIES
-                      CXX_STANDARD 20
-                      CXX_STANDARD_REQUIRED ON)
-endif()
 
 if (BUILD_THUNK_VIRTIO)
   add_rocm_subdir(libhsakmt/src/virtio "${THUNK_VIRTIO_DEFINITIONS}")
@@ -146,11 +132,6 @@ if (BUILD_ROCR)
                                ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/rocr/archive"
                                LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/rocr/lib"
                                RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/rocr/runtime")
-if (WIN32)
-  set_target_properties(hsa-runtime64 PROPERTIES
-                        CXX_STANDARD 20
-                        CXX_STANDARD_REQUIRED ON)
-endif()
 
   if (BUILD_SHARED_LIBS)
     add_dependencies(hsa-runtime64 hsakmt)

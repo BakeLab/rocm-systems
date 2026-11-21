@@ -316,7 +316,6 @@ parse:
         - UNSTABLE
         - DISABLED_CODECOV
         - DISABLED_NO_KFD
-        - WSL_TIMEOUT_SCALE
       kwargs:
         TARGET: '*'
         WORKING_DIRECTORY: '*'

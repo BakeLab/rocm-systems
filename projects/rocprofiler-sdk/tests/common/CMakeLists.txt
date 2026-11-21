@@ -198,7 +198,6 @@ function(rocprofiler_add_integration_execute_test NAME)
         "UNSTABLE" # disable when ROCPROFILER_DISABLE_UNSTABLE_CTESTS=ON
         "DISABLED_CODECOV" # disable when ROCPROFILER_BUILD_CODECOV=ON
         "DISABLED_NO_KFD" # disable when KFD is unavailable
-        "WSL_TIMEOUT_SCALE" # scale TIMEOUT when KFD is unavailable
         )
     set(_SINGLE_OPTS "TARGET" "WORKING_DIRECTORY" "DEPENDS" "TIMEOUT" "DISABLED"
                      "DISABLED_MEMCHECKS")
@@ -243,10 +242,6 @@ function(rocprofiler_add_integration_execute_test NAME)
     set_arg_if_empty(arg_FAIL_REGULAR_EXPRESSION "${ROCPROFILER_DEFAULT_FAIL_REGEX}")
     set_arg_if_empty(arg_TIMEOUT 60)
     set_arg_if_empty(arg_FIXTURES_SETUP ${NAME})
-
-    if(arg_WSL_TIMEOUT_SCALE)
-        rocprofiler_sdk_wsl_timeout_scale(arg_TIMEOUT BASE "${arg_TIMEOUT}")
-    endif()
 
     # the test is marked as unstable
     if(ROCPROFILER_DISABLE_UNSTABLE_CTESTS AND arg_UNSTABLE)

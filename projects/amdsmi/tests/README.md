@@ -44,7 +44,7 @@ tests/amd_smi_test/
 ├── check_test_conventions.py ──► pre-commit gate on layout/naming
 │
 ├── unit/                  no hardware; plain TEST(), self-registering
-│   ├── gpu/               dynamic_metrics, cper_read, mock_cper, wsl_backend
+│   ├── gpu/               dynamic_metrics, cper_read, mock_cper
 │   │   └── mock_cper/     committed .cper fixtures (AMDSMI_TEST_MOCK_DIR)
 │   └── system/            lib_loader
 │
@@ -54,8 +54,7 @@ tests/amd_smi_test/
     ├── system/            flat — no feature leaf
     ├── ifoe/{fabric,identity}/
     ├── cpu/{clock,power}/            placeholder_test.cc stubs
-    ├── nic/{discovery,identity}/     placeholder_test.cc stubs
-    └── wsl/smi/                      only when ENABLE_WSL_BACKEND
+    └── nic/{discovery,identity}/     placeholder_test.cc stubs
 ```
 
 Nothing is listed by hand — CMake globs the tree:
@@ -73,7 +72,7 @@ Suite names are the only selection mechanism — `<Component><Type>[<Operation>]
 
 ```text
                  ┌──────────────── component ────────────────┐
-   --gtest_filter= Gpu | Cpu | Nic | Ifoe | System | Wsl
+   --gtest_filter= Gpu | Cpu | Nic | Ifoe | System
                  └──────────┬────────────────────────────────┘
                             │
               ┌─────────────┴──────────────┐
@@ -88,7 +87,6 @@ Suite names are the only selection mechanism — `<Component><Type>[<Operation>]
     GpuUnit          GpuFunctionalReadOnly     GpuFunctionalReadWrite
     SystemUnit       SystemFunctionalReadOnly
                      IfoeFunctionalReadOnly
-                     WslFunctionalReadOnly   (gated)
 ```
 
 ## Python — three runners over one shared engine

@@ -4,7 +4,7 @@
 
 """Mock-based unit tests for ``amd-smi static --bus`` PCIe sentinel handling.
 
-WSL2 reports ``max_pcie_speed``/``pcie_interface_version`` as the string
+The SDK can report ``max_pcie_speed``/``pcie_interface_version`` as the string
 ``"N/A"`` sentinel (rather than a numeric max-uint sentinel) when the PCIe
 static info is unavailable. ``StaticCommands.static_gpu`` used to do
 ``bus_info["max_pcie_speed"] % 1000``, which raised
@@ -176,7 +176,7 @@ def _build_args():
 
 class TestCliStaticBusPcieNA(unittest.TestCase):
     """``max_pcie_speed``/``pcie_interface_version`` as the string ``"N/A"``
-    sentinel (the WSL2 case) must not crash ``static_gpu`` and must render as
+    sentinel must not crash ``static_gpu`` and must render as
     ``N/A`` rather than a bogus formatted value."""
 
     @classmethod
@@ -211,7 +211,7 @@ class TestCliStaticBusPcieNA(unittest.TestCase):
         return static_dict["bus"]
 
     def test_human_readable_na_does_not_crash(self):
-        # Reproduces the WSL2 crash: max_pcie_speed == "N/A" used to hit
+        # Regression: max_pcie_speed == "N/A" used to hit
         # "N/A" % 1000, raising TypeError. Must resolve to plain "N/A".
         bus_info = self._run_bus("human")
         self.assertEqual(bus_info["max_pcie_speed"], "N/A")

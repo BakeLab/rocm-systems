@@ -35,7 +35,6 @@
 #    include "lib/rocprofiler-sdk/platform/windows/agent.hpp"
 #else
 #    include "lib/rocprofiler-sdk/platform/gnulinux/agent.hpp"
-#    include "lib/rocprofiler-sdk/platform/wsl/agent.hpp"
 #endif
 
 #include <rocprofiler-sdk/agent.h>
@@ -304,74 +303,10 @@ namespace
 {
 using unique_agent_t = ::rocprofiler::platform::unique_agent_t;
 
-// Selects the platform enumerator at runtime.
-//
-// Linux builds compile only gnulinux/ and wsl/ (the WIN32 branch of
-// platform/CMakeLists.txt swaps in windows/), so only the enumerators built
-// into this binary are candidates here.
-//
-// Precedence on Linux:
-//   1. ROCPROFILER_FORCE_PLATFORM={gnulinux|wsl} overrides autodetect.
-//      Values not built into this binary are logged and ignored.
-//   2. gnulinux::is_available() (KFD sysfs present) - the common bare-metal
-//      Linux case, kept first to preserve existing behaviour byte-for-byte.
-//   3. wsl::is_available() (/dev/dxg + libdxcore.so) - WSL guest with the
-//      DXCore driver shimmed in.
-//   4. Fallback: gnulinux enumerator (will log and return an empty vector).
-//
-// Windows builds collapse to a single candidate (platform::windows).
-
-enum class platform_kind
-{
-    gnulinux = 0,
-    wsl,
-    windows,
-};
-
-// The selection above, as a value. Split out from the dispatch below so that
-// construct_agent_cache() can ask which enumerator produced the agent list
-// without a global recording the answer. It depends only on the environment,
-// which does not change between the two calls, so the two cannot disagree.
-platform_kind
-select_platform()
-{
-    const auto forced = common::get_env("ROCPROFILER_FORCE_PLATFORM", std::string{});
-    if(!forced.empty())
-    {
-#ifndef _WIN32
-        if(forced == "gnulinux") return platform_kind::gnulinux;
-        if(forced == "wsl") return platform_kind::wsl;
-#endif
-#ifdef _WIN32
-        if(forced == "windows") return platform_kind::windows;
-#endif
-        ROCP_WARNING << fmt::format(
-            "agent topology: ROCPROFILER_FORCE_PLATFORM='{}' is not built into this binary "
-            "(expected gnulinux|wsl on Linux, windows on Windows); falling back to autodetect",
-            forced);
-    }
-
-#ifndef _WIN32
-    if(platform::gnulinux::is_available()) return platform_kind::gnulinux;
-    if(platform::wsl::is_available()) return platform_kind::wsl;
-    return platform_kind::gnulinux;
-#else
-    return platform_kind::windows;
-#endif
-}
-
 std::vector<unique_agent_t>
 enumerate_platform_agents()
 {
 #ifndef _WIN32
-    switch(select_platform())
-    {
-        case platform_kind::wsl:
-            ROCP_INFO << "agent topology: selected " << platform::wsl::name;
-            return platform::wsl::enumerate();
-        case platform_kind::gnulinux:
-        case platform_kind::windows: break;
-    }
     ROCP_INFO << "agent topology: selected " << platform::gnulinux::name;
     return platform::gnulinux::enumerate();
 #else
@@ -688,28 +623,16 @@ construct_agent_cache(::HsaApiTable* table)
 
     // rocprofiler and the HSA runtime enumerate the topology independently, so
     // the two agent lists have to be paired before anything can be profiled.
-    // Both the key to pair on and the meaning of an unpaired HSA agent are
-    // platform-specific; compute_agent_mapping() holds those rules and the code
-    // below only acts on its verdict. The platform is re-derived rather than
-    // recorded because select_platform() reads nothing but the environment,
-    // which cannot have changed since enumerate_platform_agents() asked.
-    const auto mapping_policy = (select_platform() == platform_kind::wsl)
-                                    ? agent::mapping_policy::wsl
-                                    : agent::mapping_policy::strict;
 
-    auto rocp_views = std::vector<agent::mapping_agent_view>{};
-    rocp_views.reserve(rocp_agents.size());
-    for(const auto* ritr : rocp_agents)
-    {
-        rocp_views.emplace_back(agent::mapping_agent_view{
-            ritr->logical_node_id, ritr->node_id, ritr->type == ROCPROFILER_AGENT_TYPE_GPU});
-    }
+    auto logical_node_ids = std::vector<int64_t>{};
+    logical_node_ids.reserve(rocp_agents.size());
+    for(const auto* agent : rocp_agents)
+        logical_node_ids.emplace_back(agent->logical_node_id);
 
-    auto hsa_views = std::vector<agent::mapping_hsa_view>{};
-    hsa_views.reserve(hsa_agents.size());
+    auto driver_node_ids = std::vector<std::optional<uint32_t>>{};
+    driver_node_ids.reserve(hsa_agents.size());
     for(auto hitr : hsa_agents)
     {
-        auto view    = agent::mapping_hsa_view{};
         auto node_id = uint32_t{0};
         auto ret     = table->core_->hsa_agent_get_info_fn(
             hitr, static_cast<hsa_agent_info_t>(HSA_AMD_AGENT_INFO_DRIVER_NODE_ID), &node_id);
@@ -720,81 +643,27 @@ construct_agent_cache(::HsaApiTable* table)
             << " :: " << get_hsa_status_string(ret);
 
         if(ret == HSA_STATUS_SUCCESS)
-        {
-            view.has_node_id    = true;
-            view.driver_node_id = node_id;
-        }
-
-        if(auto agent_type = hsa_device_type_t{};
-           table->core_->hsa_agent_get_info_fn(
-               hitr, hsa_agent_info_t{HSA_AGENT_INFO_DEVICE}, &agent_type) == HSA_STATUS_SUCCESS)
-        {
-            view.is_gpu = (agent_type == HSA_DEVICE_TYPE_GPU);
-        }
-
-        hsa_views.emplace_back(view);
+            driver_node_ids.emplace_back(node_id);
+        else
+            driver_node_ids.emplace_back(std::nullopt);
     }
 
-    const auto mapping = agent::compute_agent_mapping(rocp_views, hsa_views, mapping_policy);
+    const auto mapping = agent::compute_agent_mapping(logical_node_ids, driver_node_ids);
 
     if(!mapping.complete())
     {
-        auto unmatched = std::vector<uint32_t>{};
-        unmatched.insert(unmatched.end(),
-                         mapping.unmatched_gpu_node_ids.begin(),
-                         mapping.unmatched_gpu_node_ids.end());
-        unmatched.insert(unmatched.end(),
-                         mapping.unmatched_other_node_ids.begin(),
-                         mapping.unmatched_other_node_ids.end());
+        const auto& unmatched = mapping.unmatched_node_ids;
 
         // Bare metal: rocprofiler and HSA read the same KFD sysfs tree, so a
         // disagreement is an internal inconsistency and still aborts.
-        ROCP_FATAL_IF(mapping_policy == agent::mapping_policy::strict)
-            << "Found " << rocp_agents.size() << " rocprofiler agents and " << hsa_agents.size()
-            << " HSA agents. HSA agents contained " << unmatched.size()
-            << " internal node ids not found by rocprofiler: "
-            << fmt::format("{}", fmt::join(unmatched.begin(), unmatched.end(), ", "))
-            << (mapping.unqueryable_count > 0
-                    ? fmt::format(" ({} HSA agents did not report a driver node id at all)",
-                                  mapping.unqueryable_count)
-                    : std::string{});
-
-        // WSL: rocprofiler drops adapters the DXG thunk cannot fully describe
-        // while HSA keeps reporting them. Profiling those GPUs is unsupported;
-        // aborting the application the user asked us to profile is not the
-        // right response, and the GPUs that did pair stay usable.
-        if(mapping_policy == agent::mapping_policy::wsl && !mapping.unmatched_gpu_node_ids.empty())
-        {
-            ROCP_ERROR << fmt::format(
-                "rocprofiler-sdk could not read the WSL topology for {} of the {} GPUs the HSA "
-                "runtime reports (KMT node ids: {}). Profiling is unavailable on those GPUs; the "
-                "application continues and the {} GPU(s) that were mapped remain profilable. See "
-                "the earlier 'wsl topology:' diagnostics for the exact symbol or adapter that was "
-                "rejected, and update the WSL ROCm runtime package to a version matching this "
-                "rocprofiler-sdk.",
-                mapping.unmatched_gpu_node_ids.size(),
-                std::count_if(
-                    hsa_views.begin(), hsa_views.end(), [](const auto& itr) { return itr.is_gpu; }),
-                fmt::format("{}",
-                            fmt::join(mapping.unmatched_gpu_node_ids.begin(),
-                                      mapping.unmatched_gpu_node_ids.end(),
-                                      ", ")),
-                std::count_if(mapping.pairs.begin(), mapping.pairs.end(), [&](const auto& itr) {
-                    return rocp_views.at(itr.rocp_index).is_gpu;
-                }));
-        }
-
-        ROCP_WARNING_IF(!mapping.unmatched_other_node_ids.empty())
-            << fmt::format("rocprofiler-sdk has no agent record for {} non-GPU HSA agent(s) (KMT "
-                           "node ids: {})",
-                           mapping.unmatched_other_node_ids.size(),
-                           fmt::join(mapping.unmatched_other_node_ids.begin(),
-                                     mapping.unmatched_other_node_ids.end(),
-                                     ", "));
-
-        ROCP_WARNING_IF(mapping.unqueryable_count > 0)
-            << mapping.unqueryable_count
-            << " HSA agents did not report a driver node id and cannot be mapped";
+        ROCP_FATAL << "Found " << rocp_agents.size() << " rocprofiler agents and "
+                   << hsa_agents.size() << " HSA agents. HSA agents contained " << unmatched.size()
+                   << " internal node ids not found by rocprofiler: "
+                   << fmt::format("{}", fmt::join(unmatched.begin(), unmatched.end(), ", "))
+                   << (mapping.unqueryable_count > 0
+                           ? fmt::format(" ({} HSA agents did not report a driver node id at all)",
+                                         mapping.unqueryable_count)
+                           : std::string{});
     }
 
     get_agent_caches().clear();
@@ -961,46 +830,6 @@ internal_refresh_topology()
     std::swap(get_agent_topology(), _updated_topology);
 }
 
-std::optional<uint32_t>
-parse_gfx_target_version(std::string_view gfx_name)
-{
-    if(gfx_name.substr(0, 3) != "gfx") return std::nullopt;
-    auto digits = gfx_name.substr(3);
-    if(digits.size() < 3) return std::nullopt;
-    // Only the step is hexadecimal: steps 10-15 are spelled a-f (gfx90a), since
-    // spelling them in decimal would be ambiguous - "gfx9010" already reads as
-    // major 90, minor 1, step 0.
-    for(size_t k = 0; k + 1 < digits.size(); ++k)
-        if(digits[k] < '0' || digits[k] > '9') return std::nullopt;
-
-    const char step_digit = digits[digits.size() - 1];
-    uint32_t   stp        = 0;
-    if(step_digit >= '0' && step_digit <= '9')
-        stp = static_cast<uint32_t>(step_digit - '0');
-    else if(step_digit >= 'a' && step_digit <= 'f')
-        stp = 10 + static_cast<uint32_t>(step_digit - 'a');
-    else
-        return std::nullopt;
-
-    constexpr auto max_packed_version = std::numeric_limits<uint32_t>::max();
-    constexpr auto major_scale        = uint32_t{10000};
-    constexpr auto minor_scale        = uint32_t{100};
-    constexpr auto max_major          = max_packed_version / major_scale;
-
-    const uint32_t min = static_cast<uint32_t>(digits[digits.size() - 2] - '0');
-    uint32_t       maj = 0;
-    for(size_t k = 0; k + 2 < digits.size(); ++k)
-    {
-        const auto digit = static_cast<uint32_t>(digits[k] - '0');
-        if(maj > (max_major - digit) / 10) return std::nullopt;
-        maj = maj * 10 + digit;
-    }
-
-    const auto minor_component = min * minor_scale;
-    if(maj > (max_packed_version - minor_component - stp) / major_scale) return std::nullopt;
-    return maj * major_scale + minor_component + stp;
-}
-
 bool
 kfd_device_available()
 {
@@ -1009,10 +838,6 @@ kfd_device_available()
     // answer is fixed and there is no device node to probe for.
     return false;
 #else
-    // Open-probe the KFD device node once. On a real KFD platform this succeeds;
-    // on WSL2/DXG (which exposes /dev/dxg but not /dev/kfd) it fails, letting
-    // callers gracefully degrade (e.g. disable KFD event tracing) instead of
-    // aborting. Cached so repeated queries from different subsystems are cheap.
     static const bool _available = []() {
         int probe_fd = ::open("/dev/kfd", O_RDWR | O_CLOEXEC);
         if(probe_fd == -1) return false;

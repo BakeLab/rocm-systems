@@ -33,8 +33,7 @@ namespace windows
 #ifdef _WIN32
 // TODO(win-d3dkmt): include <d3dkmthk.h> / <ntddvdeo.h> equivalents from the
 // WDK / Windows SDK. The POC at bgopesh/win-agent-info-poc demonstrates the
-// exact link target and which headers are used. Real implementation will
-// mirror platform/wsl/agent.cpp against the WDK D3DKMT entry points.
+// exact link target and headers.
 
 bool
 is_available()

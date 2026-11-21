@@ -15,7 +15,7 @@
 // local pragma is required.
 //
 // Every test is image-gated via CHECK_IMAGE_SUPPORT: on devices/runtime paths
-// without image/array support each test skips (as on the local WSL2 iGPU) and
+// without image/array support each test skips and
 // runs on image-capable datacenter GPUs. Coverage is limited to the scalar
 // per-reference state that a stack textureReference round-trips reliably on the
 // AMD backend (address mode, filter mode, flags, format, max anisotropy). The

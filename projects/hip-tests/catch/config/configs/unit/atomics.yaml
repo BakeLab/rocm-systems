@@ -334,7 +334,7 @@ atomics:
     <<: *level_2
     tags: [deviceLib, system, multigpu]
     # Rock_Linux_Failures_on_gfx94X
-    disabled: [amd_linux, amd_wsl]
+    disabled: [amd_linux]
   Unit_atomicAdd_system_Positive_Host_And_GPU:
     <<: *level_2
     tags: [deviceLib, system]
@@ -407,7 +407,7 @@ atomics:
   Unit_atomicExch_Positive_Same_Address_Compile_Time:
     <<: *level_2
     # SWDEV-435667: Below tests failing randomly in stress test on 01/12/23
-    disabled: [amd_wsl, nvidia_linux]
+    disabled: [nvidia_linux]
     tags: [deviceLib, ops]
   Unit_atomicExch_Positive:
     <<: *level_2
@@ -415,7 +415,6 @@ atomics:
   Unit_atomicExch_Positive_Multi_Kernel:
     <<: *level_2
     # SWDEV-435667: Below tests failing randomly in stress test on 01/12/23
-    disabled: [amd_wsl]
     tags: [deviceLib, ops]
   Unit_atomicExch_Negative_Parameters_RTC:
     <<: *level_2
@@ -424,17 +423,15 @@ atomics:
     <<: *level_2
     tags: [deviceLib, system, multigpu]
     # SWDEV-435667: Below tests failing randomly in stress test on 01/12/23
-    disabled: [amd_wsl]
   Unit_atomicExch_system_Positive_Host_And_GPU:
     <<: *level_2
     tags: [deviceLib, system]
     # SWDEV-435667: Below tests failing randomly in stress test on 01/12/23
-    disabled: [amd_wsl, nvidia_linux]
+    disabled: [nvidia_linux]
   Unit_atomicExch_system_Positive_Host_And_Peer_GPUs:
     <<: *level_2
     tags: [deviceLib, system, multigpu]
     # SWDEV-435667: Below tests failing randomly in stress test on 01/12/23
-    disabled: [amd_wsl]
   Unit_atomicExch_system_Negative_Parameters_RTC:
     <<: *level_2
     tags: [deviceLib, system]
