@@ -65,10 +65,6 @@ on:
         type: boolean
         default: false
         description: "Build PyTorch wheels"
-      build_jax:
-        type: boolean
-        default: false
-        description: "Build JAX wheels"
       build_native_linux:
         type: boolean
         default: false
@@ -179,7 +175,6 @@ jobs:
       baseline_run_id: ${{ inputs.baseline_run_id || '' }}
       build_python_packages: ${{ inputs.build_python_packages || false }}
       build_pytorch: ${{ inputs.build_pytorch || false }}
-      build_jax: ${{ inputs.build_jax || false }}
       build_native_linux: ${{ inputs.build_native_linux || false }}
       baseline_repository: ${{ inputs.baseline_repository || (inputs.baseline_run_id != '' && github.repository) || '' }}
       # Enable automatic stage reuse - TheRock finds commit-compatible baselines

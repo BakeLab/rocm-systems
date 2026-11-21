@@ -61,10 +61,9 @@ jobs:
     with:
       windows_amdgpu_families: 'none'
       build_variant: "asan"
-      # Python/PyTorch/JAX builds are not supported with ASAN yet
+      # Python/PyTorch builds are not supported with ASAN yet
       build_python_packages: false
       build_pytorch: false
-      build_jax: false
       linux_amdgpu_families: ${{ inputs.linux_amdgpu_families || 'gfx94X,gfx950,gfx125X' }}
       linux_test_labels: ${{ inputs.linux_test_labels || '' }}
       prebuilt_stages: ${{ inputs.prebuilt_stages || '' }}
