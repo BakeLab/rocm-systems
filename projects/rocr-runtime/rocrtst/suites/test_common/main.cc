@@ -359,7 +359,6 @@ TEST(rocrtstFunc, Memory_Max_Mem) {
 }
 
 TEST(rocrtstFunc, Memory_Available) {
-    if (rocrtst::SkipOnWsl("MEMORY_AVAIL uses WDDM adapter-wide dynamic accounting on WSL/DXG")) return;
     MemoryTest mt;
 
     if (!RunCustomTestProlog(&mt)) return;
@@ -382,7 +381,6 @@ TEST(rocrtstFunc, BarrierPkt_TimeStamp) {
 }
 
 TEST(rocrtstFunc, GpuCoreDump_DefaultPattern) {
-    if (rocrtst::SkipOnWsl("GPU coredump-on-exception unavailable on WSL/DXG")) return;
     GpuCoreDumpTest gcd;
     if (!RunCustomTestProlog(&gcd)) return;
     gcd.TestDefaultPattern();
@@ -390,7 +388,6 @@ TEST(rocrtstFunc, GpuCoreDump_DefaultPattern) {
 }
 
 TEST(rocrtstFunc, GpuCoreDump_CustomPattern) {
-    if (rocrtst::SkipOnWsl("GPU coredump-on-exception unavailable on WSL/DXG")) return;
     GpuCoreDumpTest gcd;
     if (!RunCustomTestProlog(&gcd)) return;
     gcd.TestCustomPattern();
@@ -398,7 +395,6 @@ TEST(rocrtstFunc, GpuCoreDump_CustomPattern) {
 }
 
 TEST(rocrtstFunc, GpuCoreDump_DisableFlag) {
-    if (rocrtst::SkipOnWsl("GPU coredump-on-exception unavailable on WSL/DXG")) return;
     GpuCoreDumpTest gcd;
     if (!RunCustomTestProlog(&gcd)) return;
     gcd.TestDisableFlag();
@@ -406,7 +402,6 @@ TEST(rocrtstFunc, GpuCoreDump_DisableFlag) {
 }
 
 TEST(rocrtstFunc, GpuCoreDump_PatternSubstitution) {
-    if (rocrtst::SkipOnWsl("GPU coredump-on-exception unavailable on WSL/DXG")) return;
     GpuCoreDumpTest gcd;
     if (!RunCustomTestProlog(&gcd)) return;
     gcd.TestPatternSubstitution();
@@ -414,7 +409,6 @@ TEST(rocrtstFunc, GpuCoreDump_PatternSubstitution) {
 }
 
 TEST(rocrtstFunc, GpuCoreDump_InvalidPath) {
-    if (rocrtst::SkipOnWsl("GPU coredump-on-exception unavailable on WSL/DXG")) return;
     GpuCoreDumpTest gcd;
     if (!RunCustomTestProlog(&gcd)) return;
     gcd.TestInvalidPath();
@@ -422,7 +416,6 @@ TEST(rocrtstFunc, GpuCoreDump_InvalidPath) {
 }
 
 TEST(rocrtstFunc, GpuCoreDump_ContentIntegrity) {
-    if (rocrtst::SkipOnWsl("GPU coredump-on-exception unavailable on WSL/DXG")) return;
     GpuCoreDumpTest gcd;
     if (!RunCustomTestProlog(&gcd)) return;
     gcd.TestCoreDumpContentIntegrity();
@@ -430,7 +423,6 @@ TEST(rocrtstFunc, GpuCoreDump_ContentIntegrity) {
 }
 
 TEST(rocrtstFunc, GpuCoreDump_PipePattern) {
-    if (rocrtst::SkipOnWsl("GPU coredump-on-exception unavailable on WSL/DXG")) return;
     GpuCoreDumpTest gcd;
     if (!RunCustomTestProlog(&gcd)) return;
     gcd.TestPipePattern();
@@ -533,7 +525,6 @@ TEST(rocrtstFunc, TrapHandler_NoTrap) {
 }
 
 TEST(rocrtstFunc, TrapHandler_Abort) {
-    if (rocrtst::SkipOnWsl("GPU trap exceptions not delivered to runtime on WSL/DXG")) return;
     TrapHandlerTest th;
     if (!RunCustomTestProlog(&th)) return;
     th.TestTrapAbort();
@@ -541,7 +532,6 @@ TEST(rocrtstFunc, TrapHandler_Abort) {
 }
 
 TEST(rocrtstFunc, TrapHandler_Generic) {
-    if (rocrtst::SkipOnWsl("GPU trap exceptions not delivered to runtime on WSL/DXG")) return;
     TrapHandlerTest th;
     if (!RunCustomTestProlog(&th)) return;
     th.TestTrapGeneric();
@@ -614,7 +604,6 @@ TEST(rocrtstFunc, AgentPropertiesTests) {
 }
 
 TEST(rocrtstFunc, GpuDiscoveryDeprecatedDoorbellTest) {
-  if (rocrtst::SkipOnWsl("KFD topology sysfs (/sys/.../kfd/topology/nodes) unavailable on WSL/DXG")) return;
   // Verifies hsa_init() succeeds when deprecated GPUs (DoorbellType != 2) are
   // present. Regression test for: a single pre-Vega GPU (e.g. Polaris/gfx803)
   // would abort HSA initialization for ALL devices in the system.
@@ -685,7 +674,6 @@ TEST(rocrtstFunc, VirtMemory_Access_Test) {
 }
 
 TEST(rocrtstFunc, VirtMemory_Accounting_Test) {
-    if (rocrtst::SkipOnWsl("vmem MEMORY_AVAIL accounting unavailable on WSL/DXG")) return;
     VirtMemoryTestBasic vmt;
 
     if (!RunCustomTestProlog(&vmt)) return;
@@ -702,7 +690,6 @@ TEST(rocrtstFunc, VirtMemory_Aliasing_Test) {
 }
 
 TEST(rocrtstFunc, VirtMemory_NonContiguousChunks_Test) {
-  if (rocrtst::SkipOnWsl("CPU-agent vmem set_access unavailable on WSL/DXG")) return;
   VirtMemoryTestBasic vmt;
 
   if (!RunCustomTestProlog(&vmt)) return;
@@ -711,7 +698,6 @@ TEST(rocrtstFunc, VirtMemory_NonContiguousChunks_Test) {
 }
 
 TEST(rocrtstFunc, VirtMemory_GPUtoHostAccess_Test) {
-  if (rocrtst::SkipOnWsl("CPU-agent vmem set_access unavailable on WSL/DXG")) return;
   VirtMemoryTestBasic vmt;
 
   if (!RunCustomTestProlog(&vmt)) return;
@@ -726,7 +712,6 @@ TEST(rocrtstFunc, VirtMemory_Interprocess_DevicePool_Test) {
 }
 
 TEST(rocrtstFunc, VirtMemory_Interprocess_HostPool_Test) {
-    if (rocrtst::SkipOnWsl("host-pool cross-process VMM (dma-buf) unavailable on WSL/DXG")) return;
     VirtMemoryTestInterProcess vmt(PoolType::kCpuPool);
     if (!RunCustomTestProlog(&vmt)) return;
     RunCustomTestEpilog(&vmt);

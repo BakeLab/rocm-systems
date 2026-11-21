@@ -356,10 +356,6 @@ class Flag {
     var = os::GetEnvVar("HSA_DTIF_SKIP_INV_CODE_CACHE");
     enable_dtif_skip_inv_code_cache_ = (var == "1") ? true : false;
 
-    // This allows detecting if the dxg driver is loaded.
-    var = os::GetEnvVar("HSA_ENABLE_DXG_DETECTION");
-    enable_dxg_detection_ = (var == "0") ? false : true;
-
     var = os::GetEnvVar("HSA_CO_DMACOPY_SIZE");
     co_dmacopy_size_ = var.empty() ? 1024 * 1024 : atoi(var.c_str());
 
@@ -539,8 +535,6 @@ class Flag {
 
   bool enable_dtif_skip_inv_code_cache() const { return enable_dtif_skip_inv_code_cache_; }
 
-  bool enable_dxg_detection() const { return enable_dxg_detection_; }
-
   SDMA_OVERRIDE sdma_linear_b2b() const { return sdma_linear_b2b_; }
 
   SDMA_OVERRIDE sdma_multicast() const { return sdma_multicast_; }
@@ -631,7 +625,6 @@ class Flag {
   bool enable_dtif_;
   bool enable_dtif_fast_copy_;
   bool enable_dtif_skip_inv_code_cache_;
-  bool enable_dxg_detection_;
   SDMA_OVERRIDE sdma_linear_b2b_ = SDMA_DEFAULT;
 
   SDMA_OVERRIDE sdma_multicast_ = SDMA_DEFAULT;

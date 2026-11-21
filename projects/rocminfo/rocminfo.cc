@@ -199,7 +199,6 @@ static const uint32_t kLabelFieldSize = 25;
 static const uint32_t kValueFieldSize = 35;
 static const uint32_t kIndentSize = 2;
 
-static bool wsl_env = false;
 static bool dtif_env = false;
 static bool model_env = false;
 
@@ -259,15 +258,6 @@ std::string int_to_string(uint64_t i,
   }
 
   return sd.str();
-}
-
-static void DetectWSLEnvironment() {
-  const char *filePath = "/dev/dxg";
-  std::ifstream file(filePath);
-  if (file) {
-    printf("WSL environment detected.\n");
-    wsl_env = true;
-  }
 }
 
 static void DetectModelEnvironment() {
@@ -739,10 +729,10 @@ static void DisplayAgentInfo(agent_info_t *agent_i) {
   }
 
   printLabelStr("Chip ID:", int_to_string(agent_i->chip_id), 1);
-  if (!(wsl_env || dtif_env))
+  if (!dtif_env)
     printLabelStr("ASIC Revision:", int_to_string(agent_i->asic_revision), 1);
   printLabelStr("Cacheline Size:", int_to_string(agent_i->cacheline_size), 1);
-  if (!(wsl_env || dtif_env) || HSA_DEVICE_TYPE_GPU == agent_i->device_type)
+  if (!dtif_env || HSA_DEVICE_TYPE_GPU == agent_i->device_type)
     printLabelInt("Max Clock Freq. (MHz):", agent_i->max_clock_freq, 1);
   printLabelInt("BDFID:", agent_i->bdf_id, 1);
   printLabelInt("Internal Node ID:", agent_i->internal_node_id, 1);
@@ -750,7 +740,7 @@ static void DisplayAgentInfo(agent_info_t *agent_i) {
   printLabelInt("SIMDs per CU:", agent_i->simds_per_cu, 1);
   printLabelInt("Shader Engines:", agent_i->shader_engs, 1);
   printLabelInt("Shader Arrs. per Eng.:", agent_i->shader_arrs_per_sh_eng, 1);
-  if (!(wsl_env || dtif_env))
+  if (!dtif_env)
     printLabelInt("WatchPts on Addr. Ranges:", agent_i->max_addr_watch_pts, 1);
 
   if (agent_i->device_type == HSA_DEVICE_TYPE_GPU)
@@ -1375,19 +1365,13 @@ int CheckInitialState(void) {
 int main() {
   hsa_status_t err;
 
-  DetectWSLEnvironment();
   DetectDTIFEnvironment();
   DetectModelEnvironment();
 
-  if (!(wsl_env || dtif_env || model_env) && CheckInitialState()) {
+  if (!(dtif_env || model_env) && CheckInitialState()) {
     return 1;
   }
   err = hsa_init();
-  if (wsl_env && (err != HSA_STATUS_SUCCESS)) {
-    printf("%shsa_init Failed, possibly no supported GPU devices%s\n",
-                                                            COL_RED, COL_RESET);
-    return 1;
-  }
   RET_IF_HSA_ERR(err)
 
   // Acquire and display system information

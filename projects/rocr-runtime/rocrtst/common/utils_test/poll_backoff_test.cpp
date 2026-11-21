@@ -6,10 +6,9 @@
 
 // Unit tests for the polling-fallback backoff helper
 // (core/util/poll_backoff.h) used by Runtime::AsyncEventsLoop when the thunk
-// exposes no interrupt-backed signal events (e.g. the WSL/dxg thunk). The
+// exposes no interrupt-backed signal events. The
 // helper governs how the userspace polling nap escalates, which is what keeps
-// an idle async-events thread from monopolizing a CPU core
-// (https://github.com/ROCm/librocdxg/issues/60).
+// an idle async-events thread from monopolizing a CPU core.
 
 #include <algorithm>
 
