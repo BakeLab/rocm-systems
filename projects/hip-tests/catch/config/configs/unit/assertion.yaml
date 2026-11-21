@@ -3,7 +3,7 @@ assertion:
   Unit_StaticAssert_Positive_Basic_RTC:
     <<: *level_2
     # Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/210
-    disabled: [amd_windows, amd_wsl]
+    disabled: [amd_windows]
     tags: [deviceLib]
   Unit_StaticAssert_Negative_Basic_RTC:
     <<: *level_2
@@ -13,4 +13,4 @@ assertion:
     <<: *level_2
     # === Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/210 ===
     # Disabled for asan since this test intentionally enter a failed state which prevents freeing resources
-    disabled: [amd_windows, amd_wsl, asan]
+    disabled: [amd_windows, asan]

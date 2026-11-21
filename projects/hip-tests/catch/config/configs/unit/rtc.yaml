@@ -48,7 +48,7 @@ rtc:
   Unit_RTC_LinkDestroy_Default:
     <<: *level_2
     # SWDEV-450909: Test failed in stress testing
-    disabled: [amd_windows, amd_wsl]
+    disabled: [amd_windows]
     tags: [link]
   Unit_RTC_LinkerAPI:
     <<: *level_2
@@ -78,7 +78,7 @@ rtc:
     <<: *level_2
     # Patch which removes the typetraits implementation from std namespace in hiprtc is reverted
     # AIRUNTIME-2410
-    disabled: [amd_wsl, asan]
+    disabled: [asan]
     tags: [header]
   Unit_Rtc_MathConstants_header:
     <<: *level_2
@@ -116,7 +116,6 @@ rtc:
   Unit_hiprtcGpuRdcComplrOptnTst:
     <<: *level_2
     # Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/327
-    disabled: [amd_wsl]
     tags: [compile]
   Unit_hiprtcEnabledDenormalsComplrOptnTst:
     <<: *level_2
@@ -145,7 +144,6 @@ rtc:
   Unit_hiprtcDisabledSlpVectorizeComplrOptnTst:
     <<: *level_2
     # Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/327
-    disabled: [amd_wsl]
     tags: [compile]
   Unit_hiprtcDefineMacroComplrOptnTst:
     <<: *level_2
@@ -162,7 +160,6 @@ rtc:
   Unit_hiprtcRpassInlineComplrOptnTst:
     <<: *level_2
     # Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/327
-    disabled: [amd_wsl]
     tags: [compile]
   Unit_hiprtcEnabledConversionErrComplrOptnTst:
     <<: *level_2
@@ -224,7 +221,6 @@ rtc:
   Unit_hiprtcCombiComplrOptnTst:
     <<: *level_2
     # Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/327
-    disabled: [amd_wsl]
     tags: [compile]
   Unit_Rtc_CoopReduce:
     <<: *level_2

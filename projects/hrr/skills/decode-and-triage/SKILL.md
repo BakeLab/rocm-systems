@@ -4,7 +4,7 @@ description: >-
   Decode and triage HRR capture archives with full GPU replay by default (Linux).
   Builds hrr-playback when missing. On Windows: full native GPU replay via
   triage_archive.ps1 + ensure_playback.ps1 (PowerShell); Docker replay requires
-  Linux or WSL2. Never edits source. Print finding summary in the chat reply.
+  Linux. Never edits source. Print finding summary in the chat reply.
 inputs:
   - HRR archive path (`capture.hrr/pid-*` directory, or capture root to resolve)
   - Optional Docker image from capture (`HRR_DOCKER_IMAGE`)
@@ -52,7 +52,7 @@ Print the **finding markdown** that `triage_archive.sh` / `triage_archive.ps1` w
 | Metadata-only triage (`--no-replay`) | **Yes** — `triage_archive.ps1 --no-replay` or `python analyze_replay_finding.py --archive <pid-dir>` |
 | Native GPU replay | **Yes** — `triage_archive.ps1` launches `hrr-playback.exe` via `Start-Process` with stdout/stderr capture |
 | Auto-build `hrr-playback.exe` | **Yes** — `ensure_playback.ps1 --build` builds `hrr-playback` from `projects/hrr` into a dedicated HRR build dir |
-| Docker replay (`--replay docker`) | **No** — requires a Linux host with Docker and GPU passthrough; use WSL2 or a Linux SSH host |
+| Docker replay (`--replay docker`) | **No** — requires a Linux host with Docker and GPU passthrough; use a Linux SSH host |
 | Container captures (e.g. vLLM image) | Replay on **Linux** (native or Docker); on Windows use `triage_archive.ps1` native replay if the Windows HIP stack matches |
 
 On Windows, prefer `triage_archive.ps1` for full GPU replay. Fall back to
@@ -97,19 +97,7 @@ Environment variables on Windows:
 
 #### W3 — Docker replay on Windows
 
-Docker GPU replay (`--device=/dev/kfd`) is **Linux-only**. On Windows:
-
-- Use WSL2 (Ubuntu 22.04+) and run `replay_docker.sh` inside WSL2:
-
-  ```bash
-  # In WSL2 shell:
-  export HRR_DOCKER_IMAGE="rocm/vllm:rocm7.13.0_gfx950-dcgpu_ubuntu24.04_py3.13_pytorch_2.10.0_vllm_0.19.1"
-  bash scripts/replay_docker.sh \
-    --archive /mnt/c/path/to/capture.hrr/pid-138 \
-    --log /tmp/hrr.log
-  ```
-
-- Or use Cursor Remote SSH → Linux ROCm server and run the Linux skill there.
+Run Docker replay on a Linux host with GPU passthrough.
 
 #### W4 — Print finding summary
 

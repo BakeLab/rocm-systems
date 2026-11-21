@@ -91,15 +91,13 @@ Code coverage and test coverage are different signals. Code coverage measures wh
 
 ## Nightly validation
 
-Nightly and multi-arch runs extend the per-PR build-and-test flow across a broader architecture set and longer-running suites. Today, if `HIP_TEST_LEVEL` is unset, the listener infers the active level from the first generated `[level_N]` tag it sees, unless a scheduled or on-demand workflow explicitly overrides the level. The CI handling of levels is expected to change when the pending level-selection workflow update in ROCm/rocm-systems#8932 lands, so this section should be reviewed in the same PR or immediately after that merge. On-demand runs such as multi-arch sweeps, WSL runtime checks, and performance or stress runs are invoked explicitly rather than on every PR. CI level cadence is not yet fully wired to `HIP_TEST_LEVEL`.
+Nightly and multi-arch runs extend the per-PR build-and-test flow across a broader architecture set and longer-running suites. Today, if `HIP_TEST_LEVEL` is unset, the listener infers the active level from the first generated `[level_N]` tag it sees, unless a scheduled or on-demand workflow explicitly overrides the level. The CI handling of levels is expected to change when the pending level-selection workflow update in ROCm/rocm-systems#8932 lands, so this section should be reviewed in the same PR or immediately after that merge. On-demand runs such as multi-arch sweeps and performance or stress runs are invoked explicitly rather than on every PR. CI level cadence is not yet fully wired to `HIP_TEST_LEVEL`.
 
 ## Supported configurations
 
 | Configuration | Validation level | Notes |
 |---|---|---|
 | AMD GPU, Linux | Primary | Main device-executed runtime validation path. |
-| AMD GPU, Windows | Supported where CI/hardware is configured | Some tests are platform-gated when APIs or process semantics differ. |
-| AMD GPU, WSL | Supported subset | Tests that depend on Linux process or graphics behavior may be gated. |
 | Multi-GPU and peer paths | Capability-gated | Tests skip when hardware capability is not present. |
 | Graphics and external interop | Environment-gated | Requires graphics/Vulkan/OpenGL-capable hosts and drivers. |
 | SPIR-V build path | Specialized | Enabled with `-DENABLE_SPIRV=ON` where supported. |
@@ -155,7 +153,7 @@ Past regressions and validation gaps have shown that source inspection is not en
 |---|---|---|
 | Public API compatibility | Applications depend on stable return codes, argument validation, and observable API behavior across releases. | Contract tests, functional tests, and coverage drift checks for public HIP APIs. |
 | Device-executed correctness | Many runtime defects only appear when commands execute on real GPU queues and memory. | Functional and integration tests that allocate memory, launch kernels, synchronize streams/graphs, and verify observable results. |
-| Cross-platform and backend behavior | HIP runs across Linux, Windows, WSL, AMD backends, and portability paths; behavior and availability can differ. | Platform/backend guards, explicit capability skips, backend-portability build coverage, Windows/Linux CI, and documented backend differences in tests. |
+| Cross-platform and backend behavior | HIP runs across AMD and NVIDIA backends on Linux; behavior and availability can differ. | Platform/backend guards, explicit capability skips, backend-portability build coverage, Linux CI, and documented backend differences in tests. |
 | Multi-GPU, IPC, and interop behavior | Peer, IPC, graphics, and external-resource paths often depend on topology or external producers. | Capability-gated multi-GPU, IPC, multiprocess, graphics, and external-resource tests; unsupported paths are skipped or documented. |
 | Performance-sensitive paths | Runtime changes can regress memcpy, memset, stream, event, graph, launch, and memory-pool performance. | Performance tests and scheduled/manual performance review; universal per-PR performance gating is a known gap. |
 | Test signal integrity | Flaky, disabled, crashing, or poorly isolated tests can make CI results misleading. | Skip policy, sticky-error cleanup guidance, one process per case, YAML disabled entries for explicit cases, and known-gap tracking. |
@@ -166,7 +164,6 @@ Release validation extends the normal PR and nightly signals with broader hardwa
 
 - passing required PR and branch CI gates for the HIP runtime test set;
 - successful nightly or multi-architecture validation across the supported AMD GPU architecture set configured for the release;
-- Windows and WSL coverage where those lanes are part of the release criteria;
 - review of known failing, flaky, disabled, or quarantined tests and their tracking issues;
 - performance-regression review for hot paths where benchmark data is available;
 - QA or release-owner sign-off according to the release process for the branch.

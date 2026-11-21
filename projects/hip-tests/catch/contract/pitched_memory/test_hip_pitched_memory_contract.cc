@@ -24,7 +24,7 @@ std::array<uint8_t, kWidth * kHeight> MakePattern(uint8_t seed) {
   return pattern;
 }
 
-// Some runtime/device paths (for example certain WSL2 dxg-backed configurations)
+// Some runtime/device paths
 // do not provide a pitched allocator and report hipErrorOutOfMemory for every
 // hipMallocPitch request. That is an allocator-support condition, not a contract
 // violation, so the helper distinguishes it from genuine failures: it returns

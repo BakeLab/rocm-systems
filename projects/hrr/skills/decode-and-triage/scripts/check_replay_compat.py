@@ -807,7 +807,7 @@ def main() -> int:
     if args.mode == "docker" and _IS_WIN:
         print(
             "error: --mode docker is not supported on Windows.\n"
-            "       For Docker replay use WSL2 and run replay_docker.sh from there.",
+            "       For Docker replay run replay_docker.sh on a Linux host with GPU passthrough.",
             file=sys.stderr,
         )
         return 1

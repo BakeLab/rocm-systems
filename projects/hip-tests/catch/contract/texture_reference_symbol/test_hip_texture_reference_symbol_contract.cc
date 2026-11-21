@@ -23,7 +23,7 @@
 // or (b) obtained from a loaded module via hipModuleGetTexRef (module route).
 //
 // Every test is image-gated via CHECK_IMAGE_SUPPORT: on devices/runtime paths
-// without image/array support each test skips (as on the local WSL2 iGPU) and
+// without image/array support each test skips and
 // runs on image-capable datacenter GPUs. A hipErrorNotSupported at a key call is
 // treated as a graceful capability skip.
 //

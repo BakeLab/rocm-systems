@@ -206,7 +206,7 @@ ncclResult_t p2pCanConnect(int* ret, struct ncclComm* comm, struct ncclTopoGraph
       *ret = legacyIPC;
       return ncclSuccess;
     }
-    // Check that legacy IPC support is available (WSL WAR)
+    // Check that legacy IPC support is available
     char* dummy;
     cudaIpcMemHandle_t ipc;
     NCCLCHECK(ncclCudaMalloc(&dummy, CUDA_IPC_MIN, comm->memManager, ncclMemOffload));

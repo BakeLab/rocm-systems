@@ -42,7 +42,7 @@ device:
   Unit_hipDeviceGetPCIBusId_Negative_PartialFill:
     <<: *level_2
     # (amd_windows) SWDEV-347670 - blocking tests have TDR, causing hangs
-    disabled: [amd_windows, amd_wsl]
+    disabled: [amd_windows]
     tags: [query, P0]
   Unit_hipDeviceGetPCIBusId_NegTst:
     <<: *level_2
@@ -129,8 +129,7 @@ device:
   Unit_hipGetDeviceFlags_Positive_Context:
     <<: *level_2
     # (amd_windows) SWDEV-347670 - blocking tests have TDR, causing hangs
-    # (amd_wsl) Note: Windows disabled
-    disabled: [amd_windows, amd_wsl]
+    disabled: [amd_windows]
     tags: [config, P0]
   Unit_hipGetSetDeviceFlags_InvalidFlag:
     <<: *level_2
@@ -153,8 +152,7 @@ device:
   Unit_hipDeviceGetUuid_Positive:
     <<: *level_2
     # (amd_windows) Note: UUID returned empty on some windows nodes
-    # (amd_wsl) Note: UUID returned empty on some windows nodes
-    disabled: [amd_windows, amd_wsl]
+    disabled: [amd_windows]
     tags: [query, P0]
   Unit_hipDeviceGetUuid_Negative:
     <<: *level_2
@@ -179,12 +177,12 @@ device:
   Unit_Uuid_FntlTstsFor_SetEnv_HIP_VISIBLE_DEVICES:
     <<: *level_2
     # Rock_Window_Failures_on_gfx1151
-    disabled: [amd_windows, amd_wsl]
+    disabled: [amd_windows]
     tags: [query, P0]
   Unit_UUID_setEnv_Thread:
     <<: *level_2
     # Rock_Window_Failures_on_gfx1151
-    disabled: [amd_windows, amd_wsl]
+    disabled: [amd_windows]
     tags: [query, multigpu, P0]
   Unit_hipDeviceAPUCheck:
     <<: *level_2
@@ -277,29 +275,25 @@ device:
   Unit_hipDeviceGetSharedMemConfig_Positive_Basic:
     <<: *level_2
     # (amd_windows) SWDEV-347670 - blocking tests have TDR, causing hangs
-    # (amd_wsl) Note: Linux disabled
-    disabled: [amd_windows, amd_wsl]
+    disabled: [amd_windows]
     tags: [config, P0]
   Unit_hipDeviceGetSharedMemConfig_Positive_Threaded:
     <<: *level_2
     # (amd_windows) SWDEV-347670 - blocking tests have TDR, causing hangs
-    # (amd_wsl) Note: Linux disabled
-    disabled: [amd_windows, amd_wsl]
+    disabled: [amd_windows]
     tags: [config, P0]
   Unit_hipDeviceGetSharedMemConfig_Negative_Parameters:
     <<: *level_2
     tags: [config, P0]
   Unit_hipDeviceReset_Positive_Basic:
     <<: *level_2
-    # (amd_wsl) Note: Windows disabled
     # (nvidia_windows) Disabling tests which no longer behave the same on nvidia platform
-    disabled: [amd_wsl, nvidia_windows]
+    disabled: [nvidia_windows]
     tags: [synchronization, P0]
   Unit_hipDeviceReset_Positive_Threaded:
     <<: *level_2
-    # (amd_wsl) Note: Windows disabled
     # (nvidia_windows) Disabling tests which no longer behave the same on nvidia platform
-    disabled: [amd_wsl, nvidia_windows]
+    disabled: [nvidia_windows]
     tags: [synchronization, P0]
   Unit_hipDeviceSetMemPool_Positive_Basic:
     <<: *level_2
@@ -325,8 +319,7 @@ device:
   Unit_hipInit_Negative:
     <<: *level_2
     # (amd_windows) SWDEV-347670 - blocking tests have TDR, causing hangs
-    # (amd_wsl) Note: Windows disabled
-    disabled: [amd_windows, amd_wsl]
+    disabled: [amd_windows]
     tags: [init, P0]
   Unit_hipInitDevice_Positive_Basic:
     <<: *level_2
@@ -393,28 +386,23 @@ device:
   Unit_hipGetProcAddress_IPC_Event: *level_2
   Unit_hipGetProcAddress_IPC_Event_SetDevice:
     <<: *level_2
-    disabled: [amd_wsl]
     tags: [multigpu]
   Unit_hipGetProcAddress_IPC_Event_CrossDevice:
     <<: *level_2
-    disabled: [amd_wsl]
     tags: [multigpu]
   Unit_hipIpcOpenMemHandle_Negative_Open_In_Creating_Process:
     <<: *level_2
     tags: [P0]
     # Note: Windows disabled
-    disabled: [amd_wsl]
   Unit_hipIpcOpenMemHandle_Negative_Open_In_Two_Contexts_Same_Device:
     <<: *level_2
     tags: [P0]
     # (amd_linux) SWDEV-511679 : Below tests fail in stress test
-    # (amd_wsl) Note: hsa_amd_ipc_ is dummy
-    disabled: [amd_linux, amd_wsl]
+    disabled: [amd_linux]
   Unit_hipIpcGetMemHandle_Positive_Unique_Handles_Separate_Allocations:
     <<: *level_2
     tags: [P0]
     # Note: Test disabled due to defect - EXSWHTEC-207
-    disabled: [amd_wsl]
   Unit_hipIpcGetMemHandle_Negative_Handle_For_Freed_Memory:
     <<: *level_2
     tags: [P0]
@@ -425,14 +413,12 @@ device:
     <<: *level_2
     tags: [P0]
     # (amd_linux) SWDEV-511679 : Below tests fail in stress test
-    # (amd_wsl) Note: hsa_amd_ipc_ is dummy
-    disabled: [amd_linux, amd_wsl]
+    disabled: [amd_linux]
   Unit_hipIpcCloseMemHandle_Negative_Close_In_Originating_Process:
     <<: *level_2
     tags: [P0]
     # Note: Windows disabled
-    disabled: [amd_wsl]
   Unit_hipIpcOpenMemHandle_Multiproc: *level_2
   Unit_hipIpcOpenMemHandle_Multiproc_Child:
     <<: *level_2
-    disabled: [amd_wsl, amd_linux, nvidia_windows, nvidia_linux, amd_windows]
+    disabled: [amd_linux, nvidia_windows, nvidia_linux, amd_windows]

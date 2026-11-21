@@ -628,5 +628,5 @@ create one).
 
 ### Platform boundary
 
-POSIX only (Linux + macOS + WSL). Windows-native is explicitly
+POSIX only (Linux + macOS). Windows-native is explicitly
 out of scope; a tracking issue follows.

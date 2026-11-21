@@ -3,17 +3,17 @@ module:
   Unit_hipModuleLaunchCooperativeKernel_Positive_Basic:
     <<: *level_2
     # Rock_Window_Failures_on_gfx1151
-    disabled: [amd_windows, amd_wsl]
+    disabled: [amd_windows]
     tags: [launch, P0]
   Unit_hipModuleLaunchCooperativeKernel_Positive_Parameters:
     <<: *level_2
     # Rock_Window_Failures_on_gfx1151
-    disabled: [amd_windows, amd_wsl]
+    disabled: [amd_windows]
     tags: [launch]
   Unit_hipModuleLaunchCooperativeKernel_Negative_Parameters:
     <<: *level_2
     # Rock_Window_Failures_on_gfx1151
-    disabled: [amd_windows, amd_wsl]
+    disabled: [amd_windows]
     tags: [launch]
   Unit_hipModuleLaunchCooperativeKernel_Verify_Capture:
     <<: *level_2
@@ -21,17 +21,17 @@ module:
   Unit_hipModuleLaunchKernel_Positive_Basic:
     <<: *level_2
     # Rock_Window_Failures_on_gfx1151
-    disabled: [amd_windows, amd_wsl]
+    disabled: [amd_windows]
     tags: [launch, P0]
   Unit_hipModuleLaunchKernel_Positive_Parameters:
     <<: *level_2
     # Rock_Window_Failures_on_gfx1151
-    disabled: [amd_windows, amd_wsl]
+    disabled: [amd_windows]
     tags: [launch]
   Unit_hipModuleLaunchKernel_Negative_Parameters:
     <<: *level_2
     # Below tests are failing PSDB
-    disabled: [amd_windows, amd_linux, amd_wsl]
+    disabled: [amd_windows, amd_linux]
     tags: [launch]
   Unit_hipModuleLaunchKernel_Fntl:
     <<: *level_2
@@ -39,12 +39,12 @@ module:
   Unit_hipModuleLaunchKernel_Verify_Capture:
     <<: *level_2
     # Rock_Window_Failures_on_gfx1151
-    disabled: [amd_windows, amd_wsl]
+    disabled: [amd_windows]
     tags: [launch]
   Unit_hipExtLaunchKernelGGL_Functional:
     <<: *level_2
     # SWDEV-438524: Below tests causing TDR & machine down in stress test on 15/12/23 ===
-    disabled: [amd_windows, amd_wsl]
+    disabled: [amd_windows]
     tags: [launch]
   Unit_hipModuleLoadDataEx_Positive_Basic:
     <<: *level_2
@@ -125,7 +125,7 @@ module:
   Unit_hipDrvLaunchKernelEx_With_CooperativeKernelWithArgs:
     <<: *level_2
     # Rock_Linux_Failures_on_gfx94X
-    disabled: [amd_linux, amd_wsl]
+    disabled: [amd_linux]
     tags: [launch]
   Unit_hipDrvLaunchKernelEx_With_MaxBlockDims:
     <<: *level_2
@@ -175,7 +175,7 @@ module:
   Unit_hipModuleUnload_Negative_Module_Is_Nullptr:
     <<: *level_2
     # Note: Test disabled due to defect - EXSWHTEC-152
-    disabled: [amd_windows, amd_wsl]
+    disabled: [amd_windows]
     tags: [load]
   Unit_hipModuleUnload_Negative_Double_Unload:
     <<: *level_2
@@ -188,7 +188,7 @@ module:
   Unit_hipModuleGetFunctionCount_Functional:
     <<: *level_2
     # (amd_windows) Rock_Window_Failures_on_gfx1151
-    disabled: [amd_windows, amd_wsl]
+    disabled: [amd_windows]
     tags: [function]
   Unit_hipModuleGetFunctionCount_NegativeTsts:
     <<: *level_2
@@ -214,7 +214,7 @@ module:
   Unit_hip_linker_spirv_input:
     <<: *level_2
     # Rock_Window_Failures_on_gfx1151
-    disabled: [amd_windows, amd_wsl]
+    disabled: [amd_windows]
     tags: [resource]
   Unit_hipLinkCreate_Negative:
     <<: *level_2
@@ -228,18 +228,18 @@ module:
   Unit_hipModuleLaunchCooperativeKernelMultiDevice_Positive_Basic:
     <<: *level_2
     # Rock_Window_Failures_on_gfx1151
-    disabled: [amd_windows, amd_wsl]
+    disabled: [amd_windows]
     tags: [launch]
   Unit_hipModuleLaunchCooperativeKernelMultiDevice_Negative_Parameters:
     <<: *level_2
     # Rock_Window_Failures_on_gfx1151
-    disabled: [amd_windows, amd_wsl]
+    disabled: [amd_windows]
     tags: [launch]
   Unit_hipModuleLaunchCooperativeKernelMultiDevice_Negative_MultiKernelSameDevice:
     <<: *level_2
     tags: [multigpu]
     # Rock_Window_Failures_on_gfx1151
-    disabled: [amd_windows, amd_wsl]
+    disabled: [amd_windows]
   Unit_hipModuleGetGlobal_Positive_Basic:
     <<: *level_2
     tags: [resource]
@@ -252,17 +252,17 @@ module:
   Unit_hipModuleGetGlobal_Negative_Hmod_Is_Nullptr:
     <<: *level_2
     # Note: Test disabled due to defect - EXSWHTEC-163
-    disabled: [amd_windows, amd_wsl]
+    disabled: [amd_windows]
     tags: [resource]
   Unit_hipModuleGetGlobal_Negative_Name_Is_Empty_String:
     <<: *level_2
     # Note: Test disabled due to defect - EXSWHTEC-164
-    disabled: [amd_windows, amd_wsl]
+    disabled: [amd_windows]
     tags: [resource]
   Unit_hipModuleGetGlobal_Negative_Dptr_And_Bytes_Are_Nullptr:
     <<: *level_2
     # Note: Test disabled due to defect - EXSWHTEC-165
-    disabled: [amd_windows, amd_wsl]
+    disabled: [amd_windows]
     tags: [resource]
   Unit_hipModuleGetGlobal_DiffDevice:
     <<: *level_2
@@ -274,22 +274,22 @@ module:
     <<: *level_2
     # (amd_windows) Below tests are failing PSDB
     # (nvidia_windows) Disabling tests which no longer behave the same on nvidia platform
-    disabled: [amd_windows, nvidia_windows, amd_wsl]
+    disabled: [amd_windows, nvidia_windows]
     tags: [resource, image]
   Unit_hipModuleGetTexRef_Negative_Parameters:
     <<: *level_2
     # Rock_Window_Failures_on_gfx1151
-    disabled: [amd_windows, amd_wsl]
+    disabled: [amd_windows]
     tags: [resource, image]
   Unit_hipModuleGetTexRef_Negative_Hmod_Is_Nullptr:
     <<: *level_2
     # Note: Test disabled due to defect - EXSWHTEC-166
-    disabled: [amd_windows, amd_wsl]
+    disabled: [amd_windows]
     tags: [resource, image]
   Unit_hipModuleGetTexRef_Negative_Name_Is_Empty_String:
     <<: *level_2
     # Note: Test disabled due to defect - EXSWHTEC-167
-    disabled: [amd_windows, amd_wsl]
+    disabled: [amd_windows]
     tags: [resource, image]
   Unit_hipFuncSetAttribute_Basic:
     <<: *level_2
@@ -300,7 +300,7 @@ module:
   Unit_hipExtModuleLaunchKernel_NonUniformWorkGroup:
     <<: *level_2
     # Below tests fail in external CI for PR https://github.com/ROCm-Developer-Tools/hip-tests/pull/96
-    disabled: [amd_windows, amd_wsl]
+    disabled: [amd_windows]
     tags: [launch]
   Unit_hipExtModuleLaunchKernel_UniformWorkGroup:
     <<: *level_2
@@ -308,17 +308,17 @@ module:
   Unit_hipExtModuleLaunchKernel_Positive_Parameters:
     <<: *level_2
     # Rock_Window_Failures_on_gfx1151
-    disabled: [amd_windows, amd_wsl]
+    disabled: [amd_windows]
     tags: [launch]
   Unit_hipExtModuleLaunchKernel_Negative_Parameters:
     <<: *level_2
     # Below tests are failing PSDB
-    disabled: [amd_windows, amd_linux, amd_wsl]
+    disabled: [amd_windows, amd_linux]
     tags: [launch]
   Unit_hipExtModuleLaunchKernel_Functional:
     <<: *level_2
     # SWDEV-438524: Below tests causing TDR & machine down in stress test on 15/12/23
-    disabled: [amd_windows, amd_wsl]
+    disabled: [amd_windows]
     tags: [launch, P0]
   Unit_hipExtModuleLaunchKernel_AnyOrder:
     <<: *level_2

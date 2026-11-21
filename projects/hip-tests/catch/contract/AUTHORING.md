@@ -112,7 +112,7 @@ per-API notes on why each gap exists.
 
 - **Image-gate texture/array/image APIs** with `CHECK_IMAGE_SUPPORT;` at the top
   of the case (after any backend-neutral null-argument checks). It skips cleanly
-  where image support is absent (e.g. a WSL2 iGPU) and runs on image-capable
+  where image support is absent and runs on image-capable
   datacenter GPUs. Exemplar: `texture_reference_symbol`.
 
 - **Gate backend-divergent or CUDA-removed APIs** with `#if HT_AMD` (from

@@ -12,7 +12,7 @@ kernel:
   Unit_hipDynamicShared:
     <<: *level_2
     # Below tests are failing PSDB
-    disabled: [amd_windows, amd_wsl]
+    disabled: [amd_windows]
     tags: [memory, P0]
   Unit_hipDynamicShared2:
     <<: *level_2
@@ -85,7 +85,7 @@ kernel:
     tags: [launch, P1]
   Unit_hipGridLaunch_ExceedMaxGridDim_Negative:
     <<: *level_2
-    disabled: [amd_windows, amd_linux, amd_wsl]
+    disabled: [amd_windows, amd_linux]
     tags: [launch]
   Unit_hipExtDynDataPrefetch_NegativeTests:
     <<: *level_2
@@ -102,7 +102,7 @@ kernel:
   Unit_KernelStackSize:
     <<: *level_2
     tags: [P0]
-    disabled: [amd_linux, amd_windows, amd_wsl]
+    disabled: [amd_linux, amd_windows]
   Unit_Validate_User_Sgpr_Count:
     <<: *level_2
   Unit_hipGridLaunch_MaxGridDim_DeviceProperties:

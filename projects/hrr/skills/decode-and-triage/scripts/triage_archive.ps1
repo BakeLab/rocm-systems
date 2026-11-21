@@ -18,7 +18,6 @@
 #
 # NOTE: Docker GPU replay is NOT supported by this script on Windows.
 #       --replay docker prints guidance and exits 1.
-#       For Docker replay on Windows, use WSL2 + replay_docker.sh from WSL2.
 # ---------------------------------------------------------------------------
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
@@ -55,7 +54,7 @@ usage: triage_archive.ps1 --archive <pid-dir> [options]
 Options:
   --archive PATH     pid-* HRR archive directory  (required)
   --replay [MODE]    Replay mode: native (default), auto, or docker
-                       docker: prints WSL2 guidance and exits 1
+                       docker: requires a Linux host with GPU passthrough
   --no-replay        Metadata / --info only (no GPU replay)
   -o PATH            Write finding to PATH
   --format FORMAT    markdown (default) or json
@@ -178,7 +177,6 @@ function Resolve-ReplayMode {
     if ($Replay -ne "auto") { return $Replay }
     if ($env:HRR_DOCKER_IMAGE) {
         Write-Triage "HRR_DOCKER_IMAGE is set; Docker GPU passthrough is not supported on Windows." "Yellow"
-        Write-Triage "Tip: run replay_docker.sh from WSL2 for Docker replay." "Yellow"
     }
     return "native"
 }
@@ -287,65 +285,9 @@ function Invoke-NativeReplay([string]$PlaybackExe, [string]$LogPath, [string]$Gp
 $Mode = Resolve-ReplayMode
 Write-Triage "archive=$Archive  replay=$Mode"
 
-# Docker replay via WSL2.
-# Docker Desktop on Windows cannot pass --device=/dev/kfd to a container directly.
-# Instead we invoke replay_docker.sh inside the WSL2 Linux kernel where /dev/kfd
-# is accessible, translating the Windows archive path to its /mnt/ WSL2 equivalent.
 if ($Mode -eq "docker") {
-    # Require WSL2
-    if (-not (Get-Command wsl -ErrorAction SilentlyContinue)) {
-        Write-Host @"
-[triage] Docker replay requires WSL2, which is not installed.
-
-Install WSL2 first:
-  wsl --install -d Ubuntu-24.04
-
-Then re-run with --replay docker (or set HRR_DOCKER_IMAGE and use --replay auto).
-"@ -ForegroundColor Yellow
-        exit 1
-    }
-
-    # Require HRR_DOCKER_IMAGE
-    if (-not $env:HRR_DOCKER_IMAGE) {
-        Write-Host "error: set HRR_DOCKER_IMAGE to the capture container image before using --replay docker" -ForegroundColor Red
-        exit 1
-    }
-
-    # Convert Windows path (C:\foo\bar) -> WSL2 /mnt/c/foo/bar
-    function ConvertTo-WslPath([string]$WinPath) {
-        $p = $WinPath.TrimEnd('\').Replace('\', '/')
-        if ($p -match '^([A-Za-z]):(.*)') {
-            return "/mnt/$($Matches[1].ToLower())$($Matches[2])"
-        }
-        return $p   # already a UNC or relative path — pass through
-    }
-
-    $wslArchive  = ConvertTo-WslPath $Archive
-    $wslWorkdir  = ConvertTo-WslPath $Workdir
-    $wslScript   = ConvertTo-WslPath (Join-Path $ScriptDir "replay_docker.sh")
-    $Log         = Join-Path $Workdir "hrr-replay-${Name}-${Ts}.log"
-    $wslLog      = ConvertTo-WslPath $Log
-
-    Write-Triage "docker replay via WSL2  image=$($env:HRR_DOCKER_IMAGE)"
-    Write-Triage "archive (WSL2)=$wslArchive"
-    Write-Triage "log=$Log"
-
-    # Build the bash command that WSL2 will run
-    $mountClr = if ($env:HRR_DOCKER_MOUNT_CLR -eq "1") { "HRR_DOCKER_MOUNT_CLR=1 " } else { "" }
-    $wslCmd = "HRR_DOCKER_IMAGE='$($env:HRR_DOCKER_IMAGE)' ${mountClr}bash '$wslScript' --archive '$wslArchive' --log '$wslLog'"
-
-    Write-Triage "wsl bash: $wslCmd"
-    wsl -- bash -c $wslCmd
-    $rc = $LASTEXITCODE
-    Write-Triage "docker replay exit=$rc"
-
-    if ($rc -ne 0) {
-        Write-Host "[triage] Docker replay failed (exit $rc). Common causes:" -ForegroundColor Yellow
-        Write-Host "  - /dev/kfd not accessible in WSL2 (needs AMD GPU driver >= 21.40 + Windows 11 build >= 22000)" -ForegroundColor Yellow
-        Write-Host "  - hrr-playback not in image: set HRR_DOCKER_MOUNT_CLR=1 with CLR_BUILD pointing at a Linux build" -ForegroundColor Yellow
-        Write-Host "  - Image not pulled: docker pull `$HRR_DOCKER_IMAGE" -ForegroundColor Yellow
-    }
-    # Fall through to analyzer so we still parse whatever log was written
+    Write-Error "Docker replay requires a Linux host with GPU passthrough."
+    exit 1
 }
 
 # Locate or build hrr-playback.exe
