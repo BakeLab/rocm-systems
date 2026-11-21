@@ -615,11 +615,6 @@ amdsmi_status_t amdsmi_alloc_fabric_telemetry(amdsmi_processor_handle processor_
   amdsmi_status_t r = get_gpu_device_from_handle(processor_handle, &device);
   if (r != AMDSMI_STATUS_SUCCESS) return r;
 
-#ifdef ENABLE_WSL_BACKEND
-  if (auto* backend = device->backend()) {
-    return backend->AllocFabricTelemetry(category_mask, telemetry);
-  }
-#endif
 
   // Acquire device mutex for UALoE API protection
   SMIGPUDEVICE_MUTEX(device->get_mutex());
@@ -659,11 +654,6 @@ amdsmi_status_t amdsmi_get_fabric_telemetry_data(amdsmi_processor_handle process
   amdsmi_status_t r = get_gpu_device_from_handle(processor_handle, &device);
   if (r != AMDSMI_STATUS_SUCCESS) return r;
 
-#ifdef ENABLE_WSL_BACKEND
-  if (auto* backend = device->backend()) {
-    return backend->GetFabricTelemetryData(telemetry);
-  }
-#endif
 
   // Acquire device mutex for UALoE API protection
   SMIGPUDEVICE_MUTEX(device->get_mutex());
@@ -698,11 +688,6 @@ amdsmi_status_t amdsmi_free_fabric_telemetry(amdsmi_processor_handle processor_h
   amdsmi_status_t r = get_gpu_device_from_handle(processor_handle, &device);
   if (r != AMDSMI_STATUS_SUCCESS) return r;
 
-#ifdef ENABLE_WSL_BACKEND
-  if (auto* backend = device->backend()) {
-    return backend->FreeFabricTelemetry(telemetry);
-  }
-#endif
 
   // Acquire device mutex for UALoE API protection
   SMIGPUDEVICE_MUTEX(device->get_mutex());
@@ -750,11 +735,6 @@ amdsmi_status_t amdsmi_get_gpu_fabric_info(amdsmi_processor_handle processor_han
   outstream << __PRETTY_FUNCTION__ << " | get_gpu_device_from_handle(): " << device;
   LOG_DEBUG(outstream);
 
-#ifdef ENABLE_WSL_BACKEND
-  if (auto* backend = device->backend()) {
-    return backend->GetGpuFabricInfo(info);
-  }
-#endif
 
   // Serialize with other per-GPU UALoE/fabric paths; fabric info is 'sysfs-only'
   // and does not require a successful ualoe_open() netlink session (telemetry does)
@@ -838,13 +818,6 @@ amdsmi_status_t get_physical_acc_id_from_ualoe(amd::smi::AMDSmiGPUDevice* device
 static amdsmi_status_t get_gpu_identity_via_ualoe_locked(amd::smi::AMDSmiGPUDevice* device,
                                                          uint32_t& phys_id,
                                                          amdsmi_tray_info_t& tray_info) {
-#ifdef ENABLE_WSL_BACKEND
-  // get_mutex() indexes into the Linux RSMI device list, which WSL devices
-  // are never registered in; skip rather than lock a null mutex.
-  if (device->backend()) {
-    return AMDSMI_STATUS_NOT_SUPPORTED;
-  }
-#endif
   SMIGPUDEVICE_MUTEX(device->get_mutex());
   return get_gpu_identity_via_ualoe(device, phys_id, tray_info);
 }

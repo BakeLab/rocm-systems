@@ -64,10 +64,6 @@ set(SRC_LIST
     "${NIC_SOURCES}"
 )
 
-if(ENABLE_WSL_BACKEND)
-    list(APPEND SRC_LIST "${SRC_DIR}/amd_smi_wsl_device.cc")
-endif()
-
 # CONFIGURE_DEPENDS re-evaluates the glob at build time so adding or removing an
 # impl header triggers a regenerate instead of going unnoticed until a clean build.
 file(GLOB IMPL_HEADERS CONFIGURE_DEPENDS "${INC_DIR}/impl/*.h")
@@ -175,20 +171,6 @@ function(amdsmi_configure_common_target _TARGET)
         ${_TARGET}
         PRIVATE rt Threads::Threads ${CMAKE_DL_LIBS} amdsminic ${FILESYSTEM_LIB} ${UALOE_LINK_LIBRARIES}
     )
-
-    if(ENABLE_WSL_BACKEND)
-        target_compile_definitions(${_TARGET} PRIVATE ENABLE_WSL_BACKEND)
-        set(_WSL_HSAKMT_INC "${PROJECT_SOURCE_DIR}/../rocr-runtime/libhsakmt/include")
-        if(NOT EXISTS "${_WSL_HSAKMT_INC}/hsakmt/rocdxg_smi.h")
-            message(
-                FATAL_ERROR
-                "ENABLE_WSL_BACKEND=ON requires ${_WSL_HSAKMT_INC}/hsakmt/rocdxg_smi.h "
-                "(built from rocr-runtime/libhsakmt's WIN_SDK/dxg path). "
-                "Check out and build the matching libhsakmt tree before enabling this flag."
-            )
-        endif()
-        target_include_directories(${_TARGET} PRIVATE ${_WSL_HSAKMT_INC})
-    endif()
 
     target_include_directories(
         ${_TARGET}
@@ -346,8 +328,6 @@ set(INSTALL_IMPL_HEADERS ${IMPL_HEADERS})
 list(FILTER INSTALL_IMPL_HEADERS EXCLUDE REGEX "_test")
 list(FILTER INSTALL_IMPL_HEADERS EXCLUDE REGEX "amd_smi_container_id_parser")
 list(FILTER INSTALL_IMPL_HEADERS EXCLUDE REGEX "amd_smi_cper")
-list(FILTER INSTALL_IMPL_HEADERS EXCLUDE REGEX "amd_smi_wsl_device")
-list(FILTER INSTALL_IMPL_HEADERS EXCLUDE REGEX "amd_smi_wsl_syms")
 install(FILES ${INSTALL_IMPL_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/amd_smi/impl/ COMPONENT dev)
 
 install(FILES ${NIC_INCLUDES} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/amd_smi/impl/nic/ COMPONENT dev)

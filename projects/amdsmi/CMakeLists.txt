@@ -106,10 +106,6 @@ include(GNUInstallDirs)
 option(BUILD_TESTS "Build test suite" OFF)
 option(ENABLE_ASAN_PACKAGING "" OFF)
 
-# WSL/WDDM GPU backend. Default OFF so native builds and CI are unchanged. When
-# ON, the WSL intercept hooks and mock backend are compiled
-option(ENABLE_WSL_BACKEND "Build the experimental WSL (WDDM/dxg) GPU backend" OFF)
-
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "x86_64")
     option(ENABLE_ESMI_LIB "Build ESMI Library" ON)
 else()
